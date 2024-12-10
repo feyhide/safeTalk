@@ -146,7 +146,9 @@ export const verifyOTP = async (req, res) => {
         res.cookie('access_token', token, {
             httpOnly: true,  // ensures token can't be accessed via JavaScript (good for security)
             secure: true,    // ensures cookie is only sent over HTTPS (works correctly in production with HTTPS)
-            sameSite: 'Strict' // ensures cookie is sent in requests from the same origin (you can adjust this based on your needs)
+            sameSite: 'Strict',
+            maxAge: 3600000,
+            domain: 'https://safetalk-y30j.onrender.com' // ensures cookie is sent in requests from the same origin (you can adjust this based on your needs)
         });
 
         return sendSuccess(res, 'User registered successfully!', validUser, 200);
@@ -211,7 +213,9 @@ export const signin = async (req, res, next) => {
         res.cookie('access_token', token, {
             httpOnly: true,  // ensures token can't be accessed via JavaScript (good for security)
             secure: true,    // ensures cookie is only sent over HTTPS (works correctly in production with HTTPS)
-            sameSite: 'Strict' // ensures cookie is sent in requests from the same origin (you can adjust this based on your needs)
+            sameSite: 'Strict',
+            maxAge: 3600000,
+            domain: 'https://safetalk-y30j.onrender.com' // ensures cookie is sent in requests from the same origin (you can adjust this based on your needs)
         });
 
         return sendSuccess(res, 'Logged in successfully.', userObject, 200);

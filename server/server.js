@@ -6,7 +6,7 @@ import cors from 'cors'
 import Redis from "ioredis"
 import authRouter from './route/auth.js'
 import userRouter from './route/user.js'
-import chatRouter from './route/chat.js'
+import chatRouter from './route/Chat.js'
 import setUpSocket from './socket/socket.js';
 import groupRouter from './route/group.js'
 import rateLimit from 'express-rate-limit'

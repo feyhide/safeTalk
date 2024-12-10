@@ -144,7 +144,9 @@ export const verifyOTP = async (req, res) => {
         const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
 
         res.cookie('access_token', token, {
-            httpOnly: true
+            httpOnly: true,  // ensures token can't be accessed via JavaScript (good for security)
+            secure: true,    // ensures cookie is only sent over HTTPS (works correctly in production with HTTPS)
+            sameSite: 'Strict' // ensures cookie is sent in requests from the same origin (you can adjust this based on your needs)
         });
 
         return sendSuccess(res, 'User registered successfully!', validUser, 200);
@@ -207,7 +209,9 @@ export const signin = async (req, res, next) => {
         const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
         res.cookie('access_token', token, {
-            httpOnly: true
+            httpOnly: true,  // ensures token can't be accessed via JavaScript (good for security)
+            secure: true,    // ensures cookie is only sent over HTTPS (works correctly in production with HTTPS)
+            sameSite: 'Strict' // ensures cookie is sent in requests from the same origin (you can adjust this based on your needs)
         });
 
         return sendSuccess(res, 'Logged in successfully.', userObject, 200);

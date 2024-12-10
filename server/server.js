@@ -30,11 +30,11 @@ app.use(express.json());
 //app.use(xss());
 //app.use(mongoSantize());
 
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: "Too many requests, please try again later.",
-});
+// const limiter = rateLimit({
+//     windowMs: 15 * 60 * 1000,
+//     max: 100,
+//     message: "Too many requests, please try again later.",
+// });
 //app.use(limiter);
 //app.use(csurf({ cookie: true }));
 const allowedOrigins = [
@@ -73,9 +73,9 @@ app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/group", groupRouter);
 
 
-app.get('*', (req, res) => {
-    res.sendFile(path.join(_dirname, 'client', 'dist', "index.html"));
-});
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(_dirname, 'client', 'dist', "index.html"));
+// });
 const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

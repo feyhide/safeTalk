@@ -7,7 +7,7 @@ import dotenv from 'dotenv'
 import Chat from '../model/Chat.js';
 import Message from '../model/Message.js';
 import crypto from 'crypto'
-import Group from '../model/group.js';
+import Group from '../model/Group.js';
 import GroupMessage from '../model/GroupMessage.js';
 dotenv.config()
 

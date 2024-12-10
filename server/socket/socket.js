@@ -12,7 +12,6 @@ import GroupMessage from '../model/GroupMessage.js';
 dotenv.config()
 
 const setUpSocket = (server) => {
-    console.log("CORS origin is: ", process.env.ORIGIN);
 
     const io = new SocketIoServer(server, {
         cors: {

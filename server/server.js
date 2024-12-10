@@ -17,27 +17,30 @@ import csurf from 'csurf'
 import path from 'path';
 
 dotenv.config();
-const _dirname = path.resolve();
+//const _dirname = path.resolve();
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
-app.use(express.static(path.join(_dirname, "/client/dist")));
-app.use(helmet({
-    contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: true,
-}));
+//app.use(express.static(path.join(_dirname, "/client/dist")));
+// app.use(helmet({
+//     contentSecurityPolicy: false,
+//     crossOriginEmbedderPolicy: true,
+// }));
 
-app.use(xss());
-app.use(mongoSantize());
+//app.use(xss());
+//app.use(mongoSantize());
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: "Too many requests, please try again later.",
 });
-app.use(limiter);
-app.use(csurf({ cookie: true }));
-const allowedOrigins = ['https://safetalk-y30j.onrender.com'];
+//app.use(limiter);
+//app.use(csurf({ cookie: true }));
+const allowedOrigins = [
+    'https://safetalk-y30j.onrender.com',
+    'http://localhost:5173',
+];
 app.use(cors({
     origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],

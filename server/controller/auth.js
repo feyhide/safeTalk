@@ -145,8 +145,6 @@ export const verifyOTP = async (req, res) => {
 
         res.cookie('access_token', token, {
             httpOnly: true,  // ensures token can't be accessed via JavaScript (good for security)
-            secure: true,    // ensures cookie is only sent over HTTPS (works correctly in production with HTTPS)
-            maxAge: 3600000,
         });
 
         return sendSuccess(res, 'User registered successfully!', validUser, 200);
@@ -210,8 +208,6 @@ export const signin = async (req, res, next) => {
 
         res.cookie('access_token', token, {
             httpOnly: true,  // ensures token can't be accessed via JavaScript (good for security)
-            secure: true,    // ensures cookie is only sent over HTTPS (works correctly in production with HTTPS)
-            maxAge: 3600000,
         });
 
         return sendSuccess(res, 'Logged in successfully.', userObject, 200);

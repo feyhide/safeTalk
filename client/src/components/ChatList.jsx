@@ -28,7 +28,7 @@ const ChatList = ({setLogOut}) => {
 
         setLoading(true);
         try {
-            const res = await fetch(`/api/v1/user/search-users`, {
+            const res = await fetch(`https://safetalk-backend.onrender.com/api/v1/user/search-users`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ const ChatList = ({setLogOut}) => {
         setLoading(true);
         try {
             setGroupName("")
-            const res = await fetch(`/api/v1/group/create-group`, {
+            const res = await fetch(`https://safetalk-backend.onrender.com/api/v1/group/create-group`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

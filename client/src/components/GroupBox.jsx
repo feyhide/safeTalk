@@ -35,7 +35,7 @@ const GroupBox = () => {
         }
         setLoading(true);
         try {
-            const response = await fetch(`/api/v1/group/get-messages`, {
+            const response = await fetch(`https://safetalk-backend.onrender.com/api/v1/group/get-messages`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

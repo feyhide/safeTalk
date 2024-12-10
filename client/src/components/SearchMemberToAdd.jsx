@@ -25,7 +25,7 @@ const SearchMemberToAdd = ({setAddMember}) => {
 
         setLoading(true);
         try {
-            const res = await fetch(`/api/v1/user/search-users`, {
+            const res = await fetch(`https://safetalk-backend.onrender.com/api/v1/user/search-users`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

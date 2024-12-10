@@ -45,7 +45,7 @@ const ChatList = ({setLogOut}) => {
                 toast.error(data.message);
             }
         } catch (error) {
-            console.log(error)
+            console.log("searching user error :",error)
             toast.error(error.response?.data?.message || "An error occurred");
         } finally {
             setLoading(false); 
@@ -101,7 +101,7 @@ const ChatList = ({setLogOut}) => {
                 toast.error(data.message);
             }
         } catch (error) {
-            console.log(error)
+            console.log("creating group error :",error)
             toast.error(error.response?.data?.message || "An error occurred");
         } finally {
             setLoading(false); 

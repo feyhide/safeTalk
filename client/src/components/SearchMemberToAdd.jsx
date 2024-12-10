@@ -42,7 +42,7 @@ const SearchMemberToAdd = ({setAddMember}) => {
                 toast.error(data.message);
             }
         } catch (error) {
-            console.log(error)
+            console.log("searching user error :",error)
             toast.error(error.response?.data?.message || "An error occurred");
         } finally {
             setLoading(false); 

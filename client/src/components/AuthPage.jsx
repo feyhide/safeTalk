@@ -67,6 +67,7 @@ const AuthPage = ({page,setPageState}) => {
                 toast.error(data.message);
             }
         } catch (error) {
+            console.log("sign up/in error :",error)
             toast.error(error.response?.data?.message || "An error occurred");
         } finally {
             setLoading(false); 
@@ -130,6 +131,7 @@ const AuthPage = ({page,setPageState}) => {
                 toast.error(data.message);
             }
         } catch (error) {
+            console.log("verifying otp error :",error)
             toast.error(error.response?.data?.message || "An error occurred");
         } finally {
             setLoading(false); 

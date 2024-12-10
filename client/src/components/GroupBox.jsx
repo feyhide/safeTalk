@@ -54,10 +54,10 @@ const GroupBox = () => {
                 dispatch(appendOlderMessagesGroup(data.messages)); 
                 dispatch(updatePageAndTotal({page:data.pagination.page,total:data.pagination.totalPages}))
             } else {
-                console.error("Failed to fetch messages:", data);
+                console.error("Failed to fetch group messages:", data);
             }
         } catch (error) {
-            console.error("Error fetching messages:", error);
+            console.error("Error fetching group messages:", error);
         } finally {
             setLoading(false);
         }

@@ -6,7 +6,7 @@ import { validateGroupName, validateMongodbId } from "../utils/validation/auth_v
 import dotenv from 'dotenv'
 import User from "../model/user.js"
 import GroupMessage from "../model/GroupMessage.js";
-import Group from "../model/group.js";
+import Group from "../model/Group.js";
 import crypto from 'crypto'
 dotenv.config()
 

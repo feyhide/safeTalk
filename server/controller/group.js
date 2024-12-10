@@ -1,4 +1,4 @@
-import Group from "../model/group.js";
+import Group from "../model/Group.js";
 import User from "../model/user.js";
 import { sendError, sendSuccess, sendValidationError } from "../utils/response.js";
 import { validateAddInGroup, validateGroupName } from "../utils/validation/auth_validator.js";

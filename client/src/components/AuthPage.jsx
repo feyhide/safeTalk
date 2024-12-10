@@ -44,7 +44,7 @@ const AuthPage = ({page,setPageState}) => {
                     }
                 )
             }else{
-                res = await fetch(`https://safetalk-backend.onrender.com/api/v1/auth/sign-up`,
+                res = await fetch(`/api/v1/auth/sign-up`,
                     {
                         method: "POST",
                         headers: {
@@ -112,7 +112,7 @@ const AuthPage = ({page,setPageState}) => {
                 return toast.error("OTP is invalid.");
             }
 
-            const res = await fetch(`https://safetalk-backend.onrender.com/api/v1/auth/verify-otp`,
+            const res = await fetch(`/api/v1/auth/verify-otp`,
                 {
                     method: "POST",
                     headers: {

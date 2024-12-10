@@ -14,12 +14,14 @@ import helmet from 'helmet'
 import xss from 'xss-clean'
 import mongoSantize from 'express-mongo-sanitize'
 import csurf from 'csurf'
+import path from 'path';
 
 dotenv.config();
-
+const _dirname = path.resolve();
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.static(path.join(_dirname, "/client/dist")));
 app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: true,
@@ -35,7 +37,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 app.use(csurf({ cookie: true }));
-const allowedOrigins = ['http://localhost:3000', 'https://safetalk-y30j.onrender.com'];
+const allowedOrigins = ['https://safetalk-y30j.onrender.com'];
 app.use(cors({
     origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -67,6 +69,10 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/group", groupRouter);
 
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(_dirname, 'client', 'dist', "index.html"));
+});
 const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

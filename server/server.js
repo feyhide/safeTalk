@@ -35,7 +35,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 app.use(csurf({ cookie: true }));
-const allowedOrigins = ['http://localhost:3000', 'https://your-frontend-domain.com'];
+const allowedOrigins = ['http://localhost:3000', 'https://safetalk-y30j.onrender.com/'];
 app.use(cors({
     origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],

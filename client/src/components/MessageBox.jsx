@@ -157,7 +157,7 @@ const MessageBox = () => {
                                         : "bg-white"
                                 }`}
                             >
-                                <p className="w-auto break-words whitespace-normal">{msg.message}</p>
+                                <p className="w-auto break-words font-slim whitespace-normal">{msg.message}</p>
                             </div>
                             {msg.sender === currentUser._id && <img src={currentUser.avatar} className="h-8 rounded-full bg-black bg-opacity-50 border-2 "/>}
                         </div>

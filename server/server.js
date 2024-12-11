@@ -18,13 +18,10 @@ import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 dotenv.config();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const buildPath = path.join(__dirname, 'client', 'build');
+const buildPath = "https://safetalk-y30j.onrender.com/opt/render/project/src/client/build"
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
-app.use(express.static(buildPath));
 //  app.use(helmet({
 //      contentSecurityPolicy: false,
 //      crossOriginEmbedderPolicy: true,

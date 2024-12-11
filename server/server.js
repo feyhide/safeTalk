@@ -14,14 +14,9 @@ import helmet from 'helmet'
 import xss from 'xss-clean'
 import mongoSantize from 'express-mongo-sanitize'
 import csurf from 'csurf'
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
 
 dotenv.config();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const buildPath = path.join(__dirname, '..', 'client', 'build');
-console.log(buildPath)
+
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
@@ -75,11 +70,6 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/group", groupRouter);
 
-app.use(express.static(buildPath));
-
-app.get('*', (req, res) => {
-    res.sendFile(path.join(buildPath, 'index.html'));
-});
 const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

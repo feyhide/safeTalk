@@ -5,19 +5,19 @@ import Home from './page/Home';
 import Chat from './page/Chat';
 
 const PrivateRoute = ({children}) => {
-  const {currentUser} = useSelector(state => state.user);
+  const { currentUser } = useSelector(state => state.user);
   const isAuthenticated = currentUser;
-  return isAuthenticated ? children : <Navigate to="/" />
-}
+  return isAuthenticated ? children : <Navigate to="/" />;
+};
 
 const AuthRoute = ({children}) => {
-  const {currentUser} = useSelector(state => state.user);
+  const { currentUser } = useSelector(state => state.user);
   const isAuthenticated = currentUser;
-  return isAuthenticated ? <Navigate to="/chats"/> : children
-}
+  return isAuthenticated ? <Navigate to="/chats" /> : children;
+};
 
 const App = () => {
-  const {currentUser} = useSelector(state => state.user);
+  const { currentUser } = useSelector(state => state.user);
   const navigate = useNavigate();
 
   useEffect(() => {

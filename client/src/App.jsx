@@ -16,7 +16,16 @@ const AuthRoute = ({children}) => {
   return isAuthenticated ? <Navigate to={`/chats`}/> : children
 }
 
+
+
 const App = () => {
+  const {currentUser} = useSelector(state => state.user);
+  
+  useEffect(()=>{
+    const isAuthenticated = currentUser;
+    return isAuthenticated ? <Navigate to={`/chats`}/> : <Navigate to={`/`}/>
+  },[currentUser])
+  
   return (
     <BrowserRouter>
       <Routes>

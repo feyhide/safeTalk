@@ -6,7 +6,7 @@ const SearchedContactsList = ({searchContacts,setSearchContacts}) => {
     const socket = useSocket();
     const {currentUser} = useSelector(state => state.user)
     if (!socket) {
-        return <div>Loading socket connection...</div>;
+        return <div className="w-full h-full flex items-center justify-center font-slim">Loading...</div>;
     }
     
     const handleSendConnection = (recipientId) => {

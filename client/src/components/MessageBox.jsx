@@ -45,7 +45,7 @@ const MessageBox = () => {
                     limit: 15,
                 }),
             });
-            if (res.status === 401) {
+            if (res.status === 401 || res.status === 403) {
                 console.warn('Session expired. Redirecting to login...');
                 dispatch(reset())
                 dispatch(resetGroup())
@@ -109,7 +109,7 @@ const MessageBox = () => {
 
     const socket = useSocket();
     if (!socket) {
-        return <div>Loading socket connection...</div>;
+        return <div className="w-full h-full flex items-center justify-center font-slim">Loading...</div>;
     }
 
     const handleCloseChat = () => {

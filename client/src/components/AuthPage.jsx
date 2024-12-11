@@ -59,7 +59,7 @@ const AuthPage = ({page,setPageState}) => {
                 )
             }
             const data = await res.json()
-            if (res.status === 401) {
+            if (res.status === 401 || res.status === 403) {
                 console.warn('Session expired. Redirecting to login...');
                 dispatch(reset())
                 dispatch(resetGroup())
@@ -135,7 +135,7 @@ const AuthPage = ({page,setPageState}) => {
                 }
             )
             const data = await res.json();
-            if (res.status === 401) {
+            if (res.status === 401 || res.status === 403) {
                 console.warn('Session expired. Redirecting to login...');
                 dispatch(reset())
                 dispatch(resetGroup())

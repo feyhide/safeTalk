@@ -17,11 +17,12 @@ import csurf from 'csurf'
 import path from 'path';
 
 dotenv.config();
-//const _dirname = path.resolve();
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const buildPath = path.join(__dirname, 'client', 'build');
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
-//app.use(express.static(path.join(_dirname, "/client/dist")));
+app.use(express.static(buildPath));
 //  app.use(helmet({
 //      contentSecurityPolicy: false,
 //      crossOriginEmbedderPolicy: true,
@@ -72,10 +73,11 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/group", groupRouter);
 
+app.use(express.static(buildPath));
 
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(_dirname, 'client', 'dist', "index.html"));
-// });
+app.get('*', (req, res) => {
+    res.sendFile(path.join(buildPath, 'index.html'));
+});
 const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

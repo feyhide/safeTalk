@@ -72,7 +72,7 @@ const AuthPage = ({page,setPageState}) => {
                     setotpState(true);
                 }else{
                     dispatch(addUser(data.data))
-                    navigate(`/chats/${data.data.username}`);
+                    navigate(`/chats`);
                 }
                 toast.success(data.message);
             }else{

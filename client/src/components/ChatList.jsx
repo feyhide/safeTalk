@@ -144,7 +144,7 @@ const ChatList = ({setLogOut}) => {
     <div className='w-screen flex flex-col relative md:w-[30%] items-center justify-center h-screen bg-white'>
         {removeConnect && (
             <div className='z-50 absolute w-[90vw] flex items-center justify-center flex-col md:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30'>
-                <div className='w-[90%] h-[80%] rounded-xl relative bg-white'>
+                <div className='w-[90%] h-[80%] rounded-xl relative bg-blue-400'>
                     <div className='w-full h-full flex p-2 flex-col font-slim justify-center items-center'>
                     <h1 className='font-heading font-bold text-white text-3xl md:text-5xl text-center'>Sure you want to say goodbye to SafeTalk ?</h1>
                     <div className='w-full font-slim h-auto items-center justify-center flex gap-2'>

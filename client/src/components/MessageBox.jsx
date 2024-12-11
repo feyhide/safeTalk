@@ -182,7 +182,7 @@ const MessageBox = () => {
                             e.target.style.height = `${Math.min(
                                 e.target.scrollHeight,
                                 e.target.offsetHeight + 150
-                            )}px`; // Adjust height, with max constraint
+                            )}px`; 
                         }}
                     />
                     <div className="w-[10%] flex items-center justify-center">

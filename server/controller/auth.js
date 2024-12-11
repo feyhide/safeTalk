@@ -145,8 +145,8 @@ export const verifyOTP = async (req, res) => {
 
         res.cookie('access_token', token, {
             httpOnly: true,
-            secure: true, // Ensure this is used with HTTPS
-            sameSite: 'None', // Required for cross-origin cookies
+            secure: true, 
+            sameSite: 'None',
         });
 
         return sendSuccess(res, 'User registered successfully!', validUser, 200);
@@ -209,8 +209,8 @@ export const signin = async (req, res, next) => {
         const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
         res.cookie('access_token', token, {
             httpOnly: true,
-            secure: true, // Ensure this is used with HTTPS
-            sameSite: 'None', // Required for cross-origin cookies
+            secure: true, 
+            sameSite: 'None',
         });
 
         return sendSuccess(res, 'Logged in successfully.', userObject, 200);

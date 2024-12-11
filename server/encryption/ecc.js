@@ -35,7 +35,7 @@ export const decryptPasswordWithOTP = (encryptedPassword, otp) => {
 }
 
 export const decryptPrivateKey = (encrypted, password, iv, salt) => {
-    const derivedKey = deriveKey(password, Buffer.from(salt, 'base64')); // Derive key from password and salt
+    const derivedKey = deriveKey(password, Buffer.from(salt, 'base64'));
     const decipher = crypto.createDecipheriv('aes-256-cbc', derivedKey, Buffer.from(iv, 'base64'));
     let decrypted = decipher.update(encrypted, 'base64', 'utf8');
     decrypted += decipher.final('utf8');

@@ -4,7 +4,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import SearchedContactsList from './SearchedContactsList';
 import { addChatuser, reset } from '../redux/chatSlice';
-import { appendGroup } from '../redux/userSlice';
+import { appendGroup, resetUser } from '../redux/userSlice';
 import { addGroup, resetGroup } from '../redux/groupSlice';
 import { useSocket } from '../context/SocketContext';
 import { DOMAIN } from '../constant/constant.js';
@@ -40,7 +40,14 @@ const ChatList = ({setLogOut}) => {
 
             const data = await res.json();
 
-
+            if (res.status === 401) {
+                console.warn('Session expired. Redirecting to login...');
+                dispatch(reset())
+                dispatch(resetGroup())
+                dispatch(resetUser())
+                window.location.href = '/';
+                return;
+            }
             if(data.success){
                 setSearchContacts(data.data);
             }else{
@@ -96,7 +103,14 @@ const ChatList = ({setLogOut}) => {
             });
 
             const data = await res.json();
-
+            if (res.status === 401) {
+                console.warn('Session expired. Redirecting to login...');
+                dispatch(reset())
+                dispatch(resetGroup())
+                dispatch(resetUser())
+                window.location.href = '/';
+                return;
+            }
             if(data.success){
                 dispatch(appendGroup(data.data));
                 setCreateGroup(false)

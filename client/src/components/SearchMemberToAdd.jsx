@@ -3,6 +3,9 @@ import { useSocket } from '../context/SocketContext.jsx';
 import { useSelector } from 'react-redux';
 import toast, { Toaster } from 'react-hot-toast';
 import { DOMAIN } from '../constant/constant.js';
+import { reset } from '../redux/chatSlice.js';
+import { resetGroup } from '../redux/groupSlice.js';
+import { resetUser } from '../redux/userSlice.js';
 
 const SearchMemberToAdd = ({setAddMember}) => {
     const [searchName, setSearchName] = useState('');
@@ -37,7 +40,14 @@ const SearchMemberToAdd = ({setAddMember}) => {
 
             const data = await res.json();
 
-
+            if (res.status === 401) {
+                console.warn('Session expired. Redirecting to login...');
+                dispatch(reset())
+                dispatch(resetGroup())
+                dispatch(resetUser())
+                window.location.href = '/';
+                return;
+            }
             if(data.success){
                 setSearchContacts(data.data);
             }else{

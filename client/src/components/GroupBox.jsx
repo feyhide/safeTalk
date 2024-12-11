@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { appendOlderMessagesGroup, refreshgroup, resetGroup, updatePageAndTotal } from "../redux/groupSlice.js";
-import { refreshChat } from "../redux/chatSlice.js";
+import { refreshChat, reset } from "../redux/chatSlice.js";
 import { useSocket } from "../context/SocketContext.jsx";
 import InfiniteScroll from "react-infinite-scroll-component";
 import SearchMemberToAdd from "./SearchMemberToAdd.jsx";
 import { DOMAIN } from "../constant/constant.js";
+import { resetUser } from "../redux/userSlice.js";
 
 const GroupBox = () => {
     window.addEventListener('beforeunload', (event) => {
@@ -36,7 +37,7 @@ const GroupBox = () => {
         }
         setLoading(true);
         try {
-            const response = await fetch(DOMAIN+`api/v1/group/get-messages`, {
+            const res = await fetch(DOMAIN+`api/v1/group/get-messages`, {
                 method: "POST",
                 credentials: 'include',
                 headers: {
@@ -48,10 +49,26 @@ const GroupBox = () => {
                     limit: 15,
                 }),
             });
+            if (res.status === 401) {
+                console.warn('Session expired. Redirecting to login...');
+                dispatch(reset())
+                dispatch(resetGroup())
+                dispatch(resetUser())
+                window.location.href = '/';
+                return;
+            }
             if(page+1 === 1){
                 dispatch(refreshgroup())
             }
-            const data = await response.json();
+            const data = await res.json();
+            if (response.status === 401) {
+                console.warn('Session expired. Redirecting to login...');
+                dispatch(reset())
+                dispatch(resetGroup())
+                dispatch(resetUser())
+                window.location.href = '/';
+                return;
+            }
             if (response.ok) {
                 dispatch(appendOlderMessagesGroup(data.messages)); 
                 dispatch(updatePageAndTotal({page:data.pagination.page,total:data.pagination.totalPages}))

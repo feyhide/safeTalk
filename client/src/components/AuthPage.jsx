@@ -3,8 +3,10 @@ import React, { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { addUser } from '../redux/userSlice';
+import { addUser, resetUser } from '../redux/userSlice';
 import { DOMAIN } from '../constant/constant.js';
+import { reset } from '../redux/chatSlice.js';
+import { resetGroup } from '../redux/groupSlice.js';
 
 const AuthPage = ({page,setPageState}) => {
     const dispatch = useDispatch()
@@ -57,6 +59,14 @@ const AuthPage = ({page,setPageState}) => {
                 )
             }
             const data = await res.json()
+            if (res.status === 401) {
+                console.warn('Session expired. Redirecting to login...');
+                dispatch(reset())
+                dispatch(resetGroup())
+                dispatch(resetUser())
+                window.location.href = '/';
+                return;
+            }
             if(data.success){
                 if(data.message.includes("OTP")){
                     setotpState(true);
@@ -125,6 +135,14 @@ const AuthPage = ({page,setPageState}) => {
                 }
             )
             const data = await res.json();
+            if (res.status === 401) {
+                console.warn('Session expired. Redirecting to login...');
+                dispatch(reset())
+                dispatch(resetGroup())
+                dispatch(resetUser())
+                window.location.href = '/';
+                return;
+            }
             if(data.success){
                 toast.success(data.message);
                 dispatch(addUser(data.data));

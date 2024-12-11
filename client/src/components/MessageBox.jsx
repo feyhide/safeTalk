@@ -5,6 +5,7 @@ import { useSocket } from "../context/SocketContext.jsx";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { resetGroup } from "../redux/groupSlice.js";
 import { DOMAIN } from "../constant/constant.js";
+import { resetUser } from "../redux/userSlice.js";
 
 const MessageBox = () => {
     window.addEventListener('beforeunload', (event) => {
@@ -44,6 +45,14 @@ const MessageBox = () => {
                     limit: 15,
                 }),
             });
+            if (res.status === 401) {
+                console.warn('Session expired. Redirecting to login...');
+                dispatch(reset())
+                dispatch(resetGroup())
+                dispatch(resetUser())
+                window.location.href = '/';
+                return;
+            }
             if(page+1 === 1){
                 dispatch(refreshChat())
             }

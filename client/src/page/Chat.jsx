@@ -21,6 +21,7 @@ const Chat = () => {
             const res = await fetch(`/api/v1/auth/sign-out`,
                 {
                     method: "GET",
+                    credentials:"include",
                     headers: {
                         'Content-Type':'application/json'
                     }

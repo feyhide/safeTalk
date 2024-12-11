@@ -30,12 +30,12 @@ app.use(express.json());
 app.use(xss());
 app.use(mongoSantize());
 
- const limiter = rateLimit({
-     windowMs: 15 * 60 * 1000,
-     max: 100,
-     message: "Too many requests, please try again later.",
+const limiter = rateLimit({
+    windowMs: 2 * 60 * 1000,
+    max: 100, 
+    message: "Too many requests, please try again after 2 minutes.",
 });
-app.use(limiter);
+
 // app.use(csurf({ cookie: true }));
 const allowedOrigins = [
     "https://safetalk-y30j.onrender.com",
@@ -67,7 +67,7 @@ redisClient.on("error", (err) => {
     console.error(`Redis connection error: ${err}`);
 });
 
-app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/auth",limiter, authRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/group", groupRouter);

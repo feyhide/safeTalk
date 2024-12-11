@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
-import { appendMessage } from "../redux/chatSlice.js";
+import { appendMessage, reset } from "../redux/chatSlice.js";
 import { appendConnection, appendGroup, removeConnection, updateConnectedGroup } from "../redux/userSlice.js";
 import { appendMember, appendMessageGroup } from "../redux/groupSlice.js";
 import {HOST} from '../constant/constant.js'
@@ -96,6 +96,10 @@ export const SocketProvider = ({ children }) => {
             }
 
             const connectionRemoved = (request) => {
+                console.log(request)
+                if(selectedChat && selectedChat.userId._id === request){
+                    dispatch(reset())
+                }
                 dispatch(removeConnection(request))
             }
             

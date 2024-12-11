@@ -59,7 +59,9 @@ const MessageBox = () => {
             const data = await res.json();
             if (res.ok) {
                 dispatch(appendOlderMessages(data.messages));
-                dispatch(updatePageAndTotal({page:data.pagination.page,total:data.pagination.totalPages}))
+                if(chatData.length > 0 || data.pagination.page == 1){
+                    dispatch(updatePageAndTotal({page:data.pagination.page,total:data.pagination.totalPages}))
+                }
             } else {
                 console.error("Failed to fetch messages:", data);
             }
@@ -140,7 +142,7 @@ const MessageBox = () => {
                 >
                     <div onClick={fetchMoreData} className="w-full h-10 flex items-center justify-center font-slim text-black">
                         {loading && <p className="p-2 bg-white rounded-xl w-fit">Loading</p>}
-                        {!loading && <p className="p-2 bg-white rounded-xl w-fit">{page >= total && page != 0 && total != 0 ? "" : "Load More Messages"}</p>}
+                        {!loading && <p className="p-2 bg-white rounded-xl w-fit">{(page >= total && page != 0 && total != 0) || (chatData.length == 0 && page == 1 && total == 0) ? "" : "Load More Messages"}</p>}
                     </div>
                     {chatData.map((msg, index) => (
                         <div

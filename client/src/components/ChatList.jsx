@@ -11,6 +11,8 @@ import { DOMAIN } from '../constant/constant.js';
 
 const ChatList = ({setLogOut}) => {
     const {currentUser} = useSelector(state => state.user);
+    const {selectedgroup} = useSelector(state => state.group);
+    const {selectedChat} = useSelector(state => state.chat);
     const [sendConnect,setSendConnect] = useState(false);
     const [createGroup,setCreateGroup] = useState(false);
     const [searchContacts,setSearchContacts] = useState([]);
@@ -72,11 +74,17 @@ const ChatList = ({setLogOut}) => {
     }, [searchName]);
 
     const handleChangeChatUser = (people) => {
+        if(selectedChat && selectedChat.userId._id === people.userId._id){
+            return
+        }
         dispatch(reset());
         dispatch(resetGroup());
         dispatch(addChatuser(people))
     }
     const handleChangeGroup = (group) => {
+        if(selectedgroup && selectedgroup._id === group._id){
+            return
+        }
         dispatch(reset());
         dispatch(resetGroup());
         dispatch(addGroup(group))
@@ -127,11 +135,11 @@ const ChatList = ({setLogOut}) => {
 
     const socket = useSocket();
     if (!socket) {
-        return <div className="w-full h-full flex items-center justify-center font-slim">Loading...</div>;
+        return <div className="w-screen flex flex-col relative md:w-[30%] items-center justify-center h-screen bg-white font-slim">Loading...</div>;
     }
 
     const handleRemoveConnectionData = () => {
-        other = removeConnect;
+        const other = removeConnect;
         socket.emit("removeConnection", {
             sender: currentUser._id,
             recipient: other.userId._id
@@ -144,12 +152,13 @@ const ChatList = ({setLogOut}) => {
     <div className='w-screen flex flex-col relative md:w-[30%] items-center justify-center h-screen bg-white'>
         {removeConnect && (
             <div className='z-50 absolute w-[90vw] flex items-center justify-center flex-col md:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30'>
-                <div className='w-[90%] h-[80%] rounded-xl relative bg-blue-400'>
-                    <div className='w-full h-full flex p-2 flex-col font-slim justify-center items-center'>
-                    <h1 className='font-heading font-bold text-white text-3xl md:text-5xl text-center'>Sure you want to say goodbye to SafeTalk ?</h1>
+                <div className='w-[90%] h-[80%] rounded-xl relative bg-white'>
+                    <div className='w-full h-full flex p-2 flex-col font-slim justify-center items-center gap-2'>
+                    <h1 className='font-heading font-bold text-black text-md text-center'>Sure you want to remove connection with {removeConnect?.userId.username} ?</h1>
+                    <p className='font-slim text-xs text-black text-md text-center'>This will delete all messages on both side</p>
                     <div className='w-full font-slim h-auto items-center justify-center flex gap-2'>
-                        <button onClick={()=>setRemoveConnect(null)} className='bg-red-400 md:text-xl text-white py-1 px-5 rounded-xl'>No</button>
-                        <button onClick={handleRemoveConnectionData} className='bg-blue-400 md:text-xl text-white py-1 px-5 rounded-xl'>Yes</button>
+                        <button onClick={()=>setRemoveConnect(null)} className='bg-red-400  text-white py-1 px-5 rounded-xl'>No</button>
+                        <button onClick={handleRemoveConnectionData} className='bg-blue-400 text-white py-1 px-5 rounded-xl'>Yes</button>
                     </div>
                     </div>
                 </div>
@@ -211,7 +220,7 @@ const ChatList = ({setLogOut}) => {
                             <img src={people.userId.avatar} className='w-8 h-8 bg-black bg-opacity-50 rounded-full border-2'/>
                             <p>@{people.userId.username}</p>
                         </div>
-                        <img onClick={()=>setRemoveConnect(people)} className='w-5 h-5' src='/icons/delete.png'/>
+                        <img onClick={()=>{setRemoveConnect(people)}} className='w-5 h-5' src='/icons/delete.png'/>
                     </div> 
                 ))}
                 </div>

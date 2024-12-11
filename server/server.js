@@ -38,6 +38,7 @@ app.use(mongoSantize());
 app.use(limiter);
 // app.use(csurf({ cookie: true }));
 const allowedOrigins = [
+    "https://safetalk-y30j.onrender.com",
     'http://localhost:5173',
 ];
 app.use(cors({

@@ -8,6 +8,7 @@ import axios from 'axios';
 import { useSocket } from '../context/SocketContext.jsx';
 import { reset } from '../redux/chatSlice.js';
 import { resetGroup } from '../redux/groupSlice.js';
+import { DOMAIN } from '../constant/constant.js';
 
 const Chat = () => {
     const [loading,setLoading] = useState(false);
@@ -18,7 +19,7 @@ const Chat = () => {
     const handleLogOut = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/v1/auth/sign-out`,
+            const res = await fetch(DOMAIN+`/api/v1/auth/sign-out`,
                 {
                     method: "GET",
                     credentials:"include",

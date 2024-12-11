@@ -41,6 +41,7 @@ const Chat = () => {
                 dispatch(reset())
                 dispatch(resetGroup());
                 dispatch(resetUser())
+                window.location.href = '/';
             }else{
                 toast.error(data.message);
             }

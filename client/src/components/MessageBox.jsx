@@ -4,6 +4,7 @@ import { appendOlderMessages, refreshChat, reset, updatePageAndTotal } from "../
 import { useSocket } from "../context/SocketContext.jsx";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { resetGroup } from "../redux/groupSlice.js";
+import { DOMAIN } from "../constant/constant.js";
 
 const MessageBox = () => {
     window.addEventListener('beforeunload', (event) => {
@@ -31,8 +32,9 @@ const MessageBox = () => {
             return
         }
         try {
-            const response = await fetch(`https://safetalk-backend.onrender.com/api/v1/chat/get-messages`, {
+            const response = await fetch(DOMAIN+`api/v1/chat/get-messages`, {
                 method: "POST",
+                credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
                 },

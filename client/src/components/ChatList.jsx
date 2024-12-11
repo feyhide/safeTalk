@@ -7,6 +7,7 @@ import { addChatuser, reset } from '../redux/chatSlice';
 import { appendGroup } from '../redux/userSlice';
 import { addGroup, resetGroup } from '../redux/groupSlice';
 import { useSocket } from '../context/SocketContext';
+import { DOMAIN } from '../constant/constant.js';
 
 const ChatList = ({setLogOut}) => {
     const {currentUser} = useSelector(state => state.user);
@@ -28,8 +29,9 @@ const ChatList = ({setLogOut}) => {
 
         setLoading(true);
         try {
-            const res = await fetch(`https://safetalk-backend.onrender.com/api/v1/user/search-users`, {
+            const res = await fetch(DOMAIN+`api/v1/user/search-users`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json',
                 },
@@ -84,8 +86,9 @@ const ChatList = ({setLogOut}) => {
         setLoading(true);
         try {
             setGroupName("")
-            const res = await fetch(`https://safetalk-backend.onrender.com/api/v1/group/create-group`, {
+            const res = await fetch(DOMAIN+`api/v1/group/create-group`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json',
                 },

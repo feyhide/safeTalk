@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
-import { HOST } from "../constant/constant.js";
 import { appendMessage } from "../redux/chatSlice.js";
 import { appendConnection, appendGroup, removeConnection, updateConnectedGroup } from "../redux/userSlice.js";
 import { appendMember, appendMessageGroup } from "../redux/groupSlice.js";
+import {HOST} from '../constant/constant.js'
 
 const SocketContext = createContext(null);
 
@@ -17,7 +17,8 @@ export const SocketProvider = ({ children }) => {
     const { selectedChat } = useSelector(state => state.chat);
     const { selectedgroup } = useSelector(state => state.group);
     const dispatch = useDispatch();
-
+    const prod = false;
+    
     useEffect(() => {
         if (currentUser) {
             socket.current = io(HOST, {

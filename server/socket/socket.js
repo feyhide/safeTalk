@@ -12,10 +12,11 @@ import GroupMessage from '../model/GroupMessage.js';
 dotenv.config()
 
 const setUpSocket = (server) => {
+    let prod = false
 
     const io = new SocketIoServer(server, {
         cors: {
-          origin: process.env.ORIGIN, 
+          origin: prod ? process.env.ORIGIN_PRODUCTION : process.env.ORIGIN, 
           methods: ["GET", "POST"],
           credentials: true
         },

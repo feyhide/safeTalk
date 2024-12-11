@@ -143,9 +143,7 @@ export const verifyOTP = async (req, res) => {
 
         const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
 
-        res.cookie('access_token', token, {
-            httpOnly: true,  // ensures token can't be accessed via JavaScript (good for security)
-        });
+        res.cookie('access_token', token);
 
         return sendSuccess(res, 'User registered successfully!', validUser, 200);
     } catch (error) {
@@ -205,10 +203,7 @@ export const signin = async (req, res, next) => {
         });
 
         const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-        res.cookie('access_token', token, {
-            httpOnly: true,  // ensures token can't be accessed via JavaScript (good for security)
-        });
+        res.cookie('access_token', token);
 
         return sendSuccess(res, 'Logged in successfully.', userObject, 200);
     } catch (error) {

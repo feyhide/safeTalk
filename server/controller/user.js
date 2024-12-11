@@ -16,7 +16,7 @@ export const searchUsers = async (req, res) => {
         const regex = new RegExp(username, "i");
 
         const currentUser = await User.findById(req.userId).select('connectedPeoples');
-
+        console.log(req.userId,username)
         const users = await User.find({
             $and: [
                     { _id: { $ne: req.userId } },
@@ -35,7 +35,8 @@ export const searchUsers = async (req, res) => {
                     return user;
                 });
             });
-
+        
+            console.log(users)
         if (users.length > 0) {
             return sendSuccess(res, "Users found", users, 200);
         } else {

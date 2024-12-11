@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useSocket } from '../context/SocketContext.jsx';
 import { useSelector } from 'react-redux';
 import toast, { Toaster } from 'react-hot-toast';
+import { DOMAIN } from '../constant/constant.js';
 
 const SearchMemberToAdd = ({setAddMember}) => {
     const [searchName, setSearchName] = useState('');
@@ -25,8 +26,9 @@ const SearchMemberToAdd = ({setAddMember}) => {
 
         setLoading(true);
         try {
-            const res = await fetch(`https://safetalk-backend.onrender.com/api/v1/user/search-users`, {
+            const res = await fetch(DOMAIN+`api/v1/user/search-users`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json',
                 },

@@ -5,6 +5,7 @@ import { refreshChat } from "../redux/chatSlice.js";
 import { useSocket } from "../context/SocketContext.jsx";
 import InfiniteScroll from "react-infinite-scroll-component";
 import SearchMemberToAdd from "./SearchMemberToAdd.jsx";
+import { DOMAIN } from "../constant/constant.js";
 
 const GroupBox = () => {
     window.addEventListener('beforeunload', (event) => {
@@ -35,8 +36,9 @@ const GroupBox = () => {
         }
         setLoading(true);
         try {
-            const response = await fetch(`https://safetalk-backend.onrender.com/api/v1/group/get-messages`, {
+            const response = await fetch(DOMAIN+`api/v1/group/get-messages`, {
                 method: "POST",
+                credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
                 },

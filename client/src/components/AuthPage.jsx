@@ -4,6 +4,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { addUser } from '../redux/userSlice';
+import { DOMAIN } from '../constant/constant.js';
 
 const AuthPage = ({page,setPageState}) => {
     const dispatch = useDispatch()
@@ -34,9 +35,10 @@ const AuthPage = ({page,setPageState}) => {
             const filteredFormData = { ...formData };
             if (page === "signin") {
                 delete filteredFormData.username;
-                res = await fetch(`https://safetalk-backend.onrender.com/api/v1/auth/sign-in`,
+                res = await fetch(DOMAIN+`api/v1/auth/sign-in`,
                     {
                         method: "POST",
+                        credentials: 'include',
                         headers: {
                             'Content-Type':'application/json'
                         },
@@ -44,7 +46,7 @@ const AuthPage = ({page,setPageState}) => {
                     }
                 )
             }else{
-                res = await fetch(`https://safetalk-backend.onrender.com/api/v1/auth/sign-up`,
+                res = await fetch(DOMAIN+`api/v1/auth/sign-up`,
                     {
                         method: "POST",
                         headers: {
@@ -112,9 +114,10 @@ const AuthPage = ({page,setPageState}) => {
                 return toast.error("OTP is invalid.");
             }
 
-            const res = await fetch(`https://safetalk-backend.onrender.com/api/v1/auth/verify-otp`,
+            const res = await fetch(DOMAIN+`api/v1/auth/verify-otp`,
                 {
                     method: "POST",
+                    credentials: 'include',
                     headers: {
                         'Content-Type':'application/json'
                     },

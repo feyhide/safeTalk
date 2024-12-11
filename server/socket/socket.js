@@ -12,7 +12,7 @@ import GroupMessage from '../model/GroupMessage.js';
 dotenv.config()
 
 const setUpSocket = (server) => {
-    let prod = true
+    let prod = false
 
     const io = new SocketIoServer(server, {
         cors: {

@@ -17,7 +17,7 @@ export const SocketProvider = ({ children }) => {
     const { selectedChat } = useSelector(state => state.chat);
     const { selectedgroup } = useSelector(state => state.group);
     const dispatch = useDispatch();
-    const prod = true;
+    const  prod = false;
     
     useEffect(() => {
         if (currentUser) {

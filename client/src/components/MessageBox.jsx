@@ -33,7 +33,7 @@ const MessageBox = () => {
             return
         }
         try {
-            const response = await fetch(DOMAIN+`api/v1/chat/get-messages`, {
+            const res = await fetch(DOMAIN+`api/v1/chat/get-messages`, {
                 method: "POST",
                 credentials: 'include',
                 headers: {
@@ -56,8 +56,8 @@ const MessageBox = () => {
             if(page+1 === 1){
                 dispatch(refreshChat())
             }
-            const data = await response.json();
-            if (response.ok) {
+            const data = await res.json();
+            if (res.ok) {
                 dispatch(appendOlderMessages(data.messages));
                 dispatch(updatePageAndTotal({page:data.pagination.page,total:data.pagination.totalPages}))
             } else {

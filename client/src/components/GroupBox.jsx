@@ -61,7 +61,7 @@ const GroupBox = () => {
                 dispatch(refreshgroup())
             }
             const data = await res.json();
-            if (response.status === 401) {
+            if (res.status === 401) {
                 console.warn('Session expired. Redirecting to login...');
                 dispatch(reset())
                 dispatch(resetGroup())
@@ -69,7 +69,7 @@ const GroupBox = () => {
                 window.location.href = '/';
                 return;
             }
-            if (response.ok) {
+            if (res.ok) {
                 dispatch(appendOlderMessagesGroup(data.messages)); 
                 dispatch(updatePageAndTotal({page:data.pagination.page,total:data.pagination.totalPages}))
             } else {

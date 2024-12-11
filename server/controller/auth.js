@@ -7,7 +7,7 @@ import dotenv from 'dotenv'
 import crypto from 'crypto';
 import { validateOtp, validateSignin, validateSignup } from '../utils/validation/auth_validator.js';
 import { sendError, sendSuccess, sendValidationError } from '../utils/response.js';
-import { decryptPasswordWithOTP, encryptPasswordWithOTP, encryptPrivateKey, generateECCKeys } from '../encryption/ecc.js';
+import { encryptPrivateKey, generateECCKeys } from '../encryption/ecc.js';
 
 dotenv.config();
 

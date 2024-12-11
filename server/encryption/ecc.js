@@ -18,22 +18,6 @@ export const encryptPrivateKey = (privateKey, password) => {
     return { encrypted, keyIv: iv.toString('base64'), keySalt: salt.toString('base64') };
 }
 
-export const encryptPasswordWithOTP = (password, otp) => {
-    const key = crypto.createHash('sha256').update(otp).digest(); 
-    const cipher = crypto.createCipheriv('aes-128-ecb', key.slice(0, 16), null); 
-    let encrypted = cipher.update(password, 'utf8', 'base64');
-    encrypted += cipher.final('base64');
-    return { encryptedPassword: encrypted, iv: null }; 
-}
-
-export const decryptPasswordWithOTP = (encryptedPassword, otp) => {
-    const key = crypto.createHash('sha256').update(otp).digest(); 
-    const decipher = crypto.createDecipheriv('aes-128-ecb', key.slice(0, 16), null); 
-    let decrypted = decipher.update(encryptedPassword, 'base64', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
-}
-
 export const decryptPrivateKey = (encrypted, password, iv, salt) => {
     const derivedKey = deriveKey(password, Buffer.from(salt, 'base64'));
     const decipher = crypto.createDecipheriv('aes-256-cbc', derivedKey, Buffer.from(iv, 'base64'));
@@ -74,11 +58,4 @@ export const deriveSharedSecret = (privateKey, publicKey) => {
     }
 
     return crypto.diffieHellman({ privateKey, publicKey });
-}
-
-export const verifySignature = (message, signature, publicKey) => {
-    const verify = crypto.createVerify('SHA256');
-    verify.update(message);
-    verify.end();
-    return verify.verify(publicKey, signature, 'hex');
 }

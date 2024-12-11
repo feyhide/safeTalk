@@ -39,6 +39,7 @@ const App = () => {
           <Chat />
         </PrivateRoute>
       } />
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 };

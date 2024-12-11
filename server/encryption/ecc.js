@@ -41,13 +41,6 @@ export const decryptMessage = (encrypted, sharedSecret, iv) => {
     return decrypted;
 }
 
-export const signMessage = (message, privateKey) => {
-    const sign = crypto.createSign('SHA256');
-    sign.update(message);
-    sign.end();
-    return sign.sign(privateKey, 'hex');
-} 
-
 export const deriveSharedSecret = (privateKey, publicKey) => {
     if (typeof privateKey === 'string') {
         privateKey = crypto.createPrivateKey(privateKey);  

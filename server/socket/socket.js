@@ -2,7 +2,7 @@ import { disconnect } from 'mongoose';
 import {Server as SocketIoServer} from 'socket.io'
 import User from '../model/user.js';
 import { getKeys } from '../controller/user.js';
-import { decryptMessage, decryptPrivateKey, deriveSharedSecret, encryptMessage, signMessage } from '../encryption/ecc.js';
+import { decryptMessage, decryptPrivateKey, deriveSharedSecret, encryptMessage } from '../encryption/ecc.js';
 import dotenv from 'dotenv'
 import Chat from '../model/Chat.js';
 import Message from '../model/Message.js';

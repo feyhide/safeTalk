@@ -17,8 +17,8 @@ import csurf from 'csurf'
 import path from 'path';
 
 dotenv.config();
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const buildPath = path.join(__dirname, 'client', 'build');
+app.use(express.static(buildPath));
 const app = express();
 app.use(cookieParser());
 app.use(express.json());

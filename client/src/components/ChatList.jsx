@@ -130,11 +130,13 @@ const ChatList = ({setLogOut}) => {
         return <div>Loading socket connection...</div>;
     }
 
-    const handleRemoveConnectionData = (other) => {
+    const handleRemoveConnectionData = () => {
+        other = removeConnect;
         socket.emit("removeConnection", {
             sender: currentUser._id,
             recipient: other.userId._id
         });
+        setRemoveConnect(null);
     }
     return (
     <>
@@ -143,19 +145,12 @@ const ChatList = ({setLogOut}) => {
         {removeConnect && (
             <div className='z-50 absolute w-[90vw] flex items-center justify-center flex-col md:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30'>
                 <div className='w-[90%] h-[80%] rounded-xl relative bg-white'>
-                    <img onClick={()=>setSendConnect(false)} className='w-8 h-8 absolute top-5 left-5' src="/icons/crossblack.png"/>
                     <div className='w-full h-full flex p-2 flex-col font-slim justify-center items-center'>
-                        <div className='w-full h-[20%] flex flex-col items-center justify-between'>
-                            <h1 className='font-semibold text-xl'>Connect with some new mates</h1>
-                            <div className='w-full bg-blue-200 rounded-xl px-2 flex items-center'>
-                                @<input type='text' placeholder='username' onChange={(e)=>setSearchName(e.target.value)} value={searchName} className='w-full lowercase p-2 bg-transparent outline-none' />
-                            </div>
-                        </div>
-                        <div className='w-full h-[50%] flex flex-col justify-center items-center'>
-                            {searchContacts.length > 0 ? (<SearchedContactsList searchContacts={searchContacts} setSearchContacts={setSearchContacts}/>):(
-                                <div className='flex flex-col justify-center items-center w-full h-full'>{searchName && searchName.length === 0 ? "Search for a user" : "No Contacts matched"}</div>
-                            )}
-                        </div>
+                    <h1 className='font-heading font-bold text-white text-3xl md:text-5xl text-center'>Sure you want to say goodbye to SafeTalk ?</h1>
+                    <div className='w-full font-slim h-auto items-center justify-center flex gap-2'>
+                        <button onClick={()=>setRemoveConnect(null)} className='bg-red-400 md:text-xl text-white py-1 px-5 rounded-xl'>No</button>
+                        <button onClick={handleRemoveConnectionData} className='bg-blue-400 md:text-xl text-white py-1 px-5 rounded-xl'>Yes</button>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -216,7 +211,7 @@ const ChatList = ({setLogOut}) => {
                             <img src={people.userId.avatar} className='w-8 h-8 bg-black bg-opacity-50 rounded-full border-2'/>
                             <p>@{people.userId.username}</p>
                         </div>
-                        <img onClick={()=>handleRemoveConnectionData(people)} className='w-5 h-5' src='/icons/delete.png'/>
+                        <img onClick={()=>setRemoveConnect(people)} className='w-5 h-5' src='/icons/delete.png'/>
                     </div> 
                 ))}
                 </div>

@@ -14,11 +14,13 @@ import helmet from 'helmet'
 import xss from 'xss-clean'
 import mongoSantize from 'express-mongo-sanitize'
 import csurf from 'csurf'
-import path from 'path';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const buildPath = path.join(__dirname, 'client', 'build');
-app.use(express.static(buildPath));
 const app = express();
 app.use(cookieParser());
 app.use(express.json());

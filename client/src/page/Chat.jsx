@@ -19,7 +19,7 @@ const Chat = () => {
     const handleLogOut = async () => {
         setLoading(true);
         try {
-            const res = await fetch(DOMAIN+`/api/v1/auth/sign-out`,
+            const res = await fetch(DOMAIN+`api/v1/auth/sign-out`,
                 {
                     method: "GET",
                     credentials:"include",

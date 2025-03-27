@@ -8,8 +8,8 @@ const ChatBox = () => {
   const { selectedgroup } = useSelector((state) => state.group);
 
   return (
-    <div className="w-screen flex flex-col md:w-[70%] items-center justify-center h-screen bg-white">
-      <div className="w-[90vw] flex flex-col md:w-[95%] h-[95%] rounded-xl bg-blue-400 bg-opacity-90">
+    <div className="w-screen flex flex-col lg:w-[70%] items-center justify-center h-screen bg-white">
+      <div className="w-[90vw] flex flex-col lg:w-[95%] h-[95%] rounded-xl bg-blue-400 bg-opacity-90">
         {selectedgroup ? (
           <GroupBox />
         ) : selectedChat ? (

@@ -17,7 +17,7 @@ const SearchedContactsList = ({ searchContacts, setSearchContacts }) => {
   };
 
   return (
-    <div className="w-full h-full overflow-y-auto ">
+    <div className="w-full h-full text-white customScroll p-2 overflow-y-auto ">
       {searchContacts?.map((contact, index) => (
         <div
           key={index}
@@ -35,7 +35,7 @@ const SearchedContactsList = ({ searchContacts, setSearchContacts }) => {
               onClick={() => handleSendConnection(contact._id)}
               className="p-2 bg-green-500 text-white rounded-xl"
             >
-              Send Connection
+              Add
             </button>
           </div>
         </div>

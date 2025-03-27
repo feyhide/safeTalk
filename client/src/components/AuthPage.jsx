@@ -169,50 +169,50 @@ const AuthPage = ({ page, setPageState }) => {
   return (
     <>
       <Toaster />
-      <div className="w-[70vw] relative md:w-[60vw] lg:w-[50vw] p-5 gap-2 min-h-[50vh] bg-white bg-opacity-35 m-2 rounded-xl flex flex-col items-center justify-center">
+      <div className="w-[70vw] relative lg:w-[60vw] lg:w-[50vw] p-5 gap-2 min-h-[50svh] bg-white bg-opacity-35 m-2 rounded-xl flex flex-col items-center justify-center">
         {!otpState ? (
           <>
-            <p className="font-heading tracking-tight text-gray-700 font-bold text-3xl md:text-4xl">
+            <p className="font-heading tracking-tight text-gray-700 font-bold text-3xl lg:text-4xl">
               {page === "signin" ? "Sign In" : "Sign Up"}
             </p>
             {page === "signup" && (
               <div className="w-full flex font-slim flex-col">
-                <label className="text-xs md:text-lg">Username</label>
+                <label className="text-xs lg:text-lg">Username</label>
                 <input
                   onChange={handleChange}
                   name="username"
                   value={formData.username}
                   type="text"
-                  className="outline-none bg-white bg-opacity-30 p-2 rounded-xl text-xs md:text-base"
+                  className="outline-none bg-white bg-opacity-30 p-2 rounded-xl text-xs lg:text-base"
                 />
               </div>
             )}
             <div className="w-full flex font-slim flex-col">
-              <label className="text-gray-700 text-xs md:text-lg">Email</label>
+              <label className="text-gray-700 text-xs lg:text-lg">Email</label>
               <input
                 onChange={handleChange}
                 name="email"
                 value={formData.email}
                 type="email"
-                className="outline-none bg-white bg-opacity-30 p-2 rounded-xl text-xs md:text-base"
+                className="outline-none bg-white bg-opacity-30 p-2 rounded-xl text-xs lg:text-base"
               />
             </div>
             <div className="w-full flex font-slim flex-col">
-              <label className=" text-gray-700 text-xs md:text-lg">
+              <label className=" text-gray-700 text-xs lg:text-lg">
                 Password
               </label>
               <div className="w-full flex relative flex-col">
                 <img
                   onClick={() => setshowPassword(!showPassword)}
                   src={showPassword ? "/icons/crosseye.png" : "/icons/eye.png"}
-                  className="w-4 md:w-5 h-4 md:h-5 absolute top-1/2 right-5 -translate-y-1/2"
+                  className="w-4 lg:w-5 h-4 lg:h-5 absolute top-1/2 right-5 -translate-y-1/2"
                 />
                 <input
                   onChange={handleChange}
                   name="password"
                   value={formData.password}
                   type={showPassword ? "text" : "password"}
-                  className="outline-none bg-white bg-opacity-30 p-2 rounded-xl text-xs md:text-base"
+                  className="outline-none bg-white bg-opacity-30 p-2 rounded-xl text-xs lg:text-base"
                 />
               </div>
             </div>
@@ -220,7 +220,7 @@ const AuthPage = ({ page, setPageState }) => {
               <button
                 disabled={loading}
                 onClick={handleSubmit}
-                className="bg-blue-400 md:text-lg text-white py-1 px-5 rounded-xl"
+                className="bg-blue-400 lg:text-lg text-white py-1 px-5 rounded-xl"
               >
                 {loading
                   ? "Loading..."
@@ -232,7 +232,7 @@ const AuthPage = ({ page, setPageState }) => {
                 onClick={() =>
                   setPageState(page === "signin" ? "signup" : "signin")
                 }
-                className="text-xs text-center sm:text-sm md:text-base underline text-gray-700 hover:text-blue-600"
+                className="text-xs text-center sm:text-sm lg:text-base underline text-gray-700 hover:text-blue-600"
               >
                 {page === "signin"
                   ? "New Here ? Why not create an account and join us"
@@ -260,14 +260,14 @@ const AuthPage = ({ page, setPageState }) => {
                 inputMode="numeric"
                 placeholder="OTP"
                 name="otp"
-                className="outline-none no-spinner bg-white bg-opacity-30 p-2 rounded-xl text-xs md:text-base"
+                className="outline-none no-spinner bg-white bg-opacity-30 p-2 rounded-xl text-xs lg:text-base"
               />
             </div>
             <div className="w-full flex gap-2 flex-col items-center justify-center font-slim">
               <button
                 disabled={loading}
                 onClick={handleVerifyOtp}
-                className="bg-blue-400 md:text-lg text-white py-1 px-5 rounded-xl"
+                className="bg-blue-400 lg:text-lg text-white py-1 px-5 rounded-xl"
               >
                 {loading ? "Verifying..." : "Verify"}
               </button>

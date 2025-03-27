@@ -54,24 +54,24 @@ const Chat = () => {
         <>
           <div className="w-screen h-screen flex gap-4 items-center justify-center flex-col bg-gradient-to-b from-white via-blue-300 to-blue-500">
             {loading ? (
-              <h1 className="font-heading font-bold text-white text-3xl md:text-5xl text-center">
+              <h1 className="font-heading font-bold text-white text-3xl lg:text-5xl text-center">
                 Signing you out. Goodbye!
               </h1>
             ) : (
               <>
-                <h1 className="font-heading font-bold text-white text-3xl md:text-5xl text-center">
+                <h1 className="font-heading font-bold text-white text-3xl lg:text-5xl text-center">
                   Sure you want to say goodbye to SafeTalk ?
                 </h1>
                 <div className="w-full font-slim h-auto items-center justify-center flex gap-2">
                   <button
                     onClick={() => setLogOut(false)}
-                    className="bg-red-400 md:text-xl text-white py-1 px-5 rounded-xl"
+                    className="bg-red-400 lg:text-xl text-white py-1 px-5 rounded-xl"
                   >
                     No
                   </button>
                   <button
                     onClick={handleLogOut}
-                    className="bg-blue-400 md:text-xl text-white py-1 px-5 rounded-xl"
+                    className="bg-blue-400 lg:text-xl text-white py-1 px-5 rounded-xl"
                   >
                     Yes
                   </button>
@@ -82,11 +82,11 @@ const Chat = () => {
         </>
       ) : (
         <>
-          <div className="hidden md:flex justify-between w-screen h-screen">
+          <div className="hidden lg:flex justify-between w-screen h-screen">
             <ChatList setLogOut={setLogOut} />
             <ChatBox />
           </div>
-          <div className="md:hidden w-screen h-screen flex">
+          <div className="lg:hidden w-screen h-screen flex">
             {selectedChat || selectedgroup ? (
               <ChatBox />
             ) : (

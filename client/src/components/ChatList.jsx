@@ -163,7 +163,6 @@ const ChatList = ({ setLogOut }) => {
 
     setLoading(true);
     try {
-      setGroupName("");
       const res = await fetch(DOMAIN + `api/v1/group/create-group`, {
         method: "POST",
         credentials: "include",
@@ -182,9 +181,11 @@ const ChatList = ({ setLogOut }) => {
         window.location.href = "/";
         return;
       }
+
       if (data.success) {
         dispatch(appendGroup(data.data));
         setCreateGroup(false);
+        setGroupName("");
       } else {
         toast.error(data.message);
       }
@@ -207,16 +208,16 @@ const ChatList = ({ setLogOut }) => {
   return (
     <>
       <Toaster />
-      <div className="w-screen flex flex-col relative md:w-[30%] items-center justify-center h-screen bg-white">
+      <div className="w-screen flex flex-col relative lg:w-[30%] items-center justify-center h-screen bg-white">
         {removeConnect && (
-          <div className="z-50 absolute w-[90vw] flex items-center justify-center flex-col md:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
+          <div className="z-50 absolute w-[90vw] flex items-center justify-center flex-col lg:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
             <div className="w-[90%] h-[80%] rounded-xl relative bg-white">
               <div className="w-full h-full flex p-2 flex-col font-slim justify-center items-center gap-2">
-                <h1 className="font-heading font-bold text-black text-md text-center">
+                <h1 className="font-heading font-bold text-black text-lg text-center">
                   Sure you want to remove connection with{" "}
                   {removeConnect?.userId.username} ?
                 </h1>
-                <p className="font-slim text-xs text-black text-md text-center">
+                <p className="font-slim text-xs text-black text-center">
                   This will delete all messages on both side
                 </p>
                 <div className="w-full font-slim h-auto items-center justify-center flex gap-2">
@@ -238,19 +239,19 @@ const ChatList = ({ setLogOut }) => {
           </div>
         )}
         {sendConnect && (
-          <div className="z-50 absolute w-[90vw] flex items-center justify-center flex-col md:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
-            <div className="w-[90%] h-[80%] rounded-xl relative bg-white">
+          <div className="z-50 absolute w-[90vw] text-white flex items-center justify-center flex-col lg:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
+            <div className="w-[90%] h-[80%] rounded-xl relative bg-blue-400">
               <img
                 onClick={() => setSendConnect(false)}
                 className="w-8 h-8 absolute top-5 left-5"
                 src="/icons/crossblack.png"
               />
               <div className="w-full h-full flex p-2 flex-col font-slim justify-center items-center">
-                <div className="w-full h-[20%] flex flex-col items-center justify-between">
-                  <h1 className="font-semibold text-xl">
-                    Connect with some new mates
+                <div className="w-full h-[15%] flex flex-col items-center gap-2">
+                  <h1 className="font-semibold text-center text-xl">
+                    Add Friends
                   </h1>
-                  <div className="w-full bg-blue-200 rounded-xl px-2 flex items-center">
+                  <div className="w-full bg-slate-500/50 rounded-xl px-2 flex items-center">
                     <input
                       type="text"
                       placeholder="username"
@@ -260,7 +261,7 @@ const ChatList = ({ setLogOut }) => {
                     />
                   </div>
                 </div>
-                <div className="w-full h-[50%] flex flex-col justify-center items-center">
+                <div className="w-full h-[70%] flex flex-col justify-center items-center">
                   {loading ? (
                     <div className="flex flex-col justify-center items-center w-full h-full">
                       Searching
@@ -283,34 +284,34 @@ const ChatList = ({ setLogOut }) => {
           </div>
         )}
         {createGroup && (
-          <div className="z-50 absolute w-[90vw] flex items-center justify-center flex-col md:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
-            <div className="w-[90%] h-[80%] rounded-xl overflow-hidden relative bg-white">
+          <div className="z-50 absolute w-[90vw] flex items-center justify-center flex-col lg:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
+            <div className="w-[90%] text-white p-2 h-[50%] rounded-xl overflow-hidden relative bg-blue-400">
               <img
                 onClick={() => setCreateGroup(false)}
                 className="w-8 h-8 absolute top-5 left-5"
                 src="/icons/crossblack.png"
               />
-              <div className="w-full h-full font-slim flex justify-center items-center">
-                <div className="w-full p-2 flex items-center flex-col gap-2">
+              <div className="w-full h-full font-slim flex flex-col gap-2 justify-center items-center">
+                <div className="w-full bg-slate-500/50 rounded-xl px-2 flex flex-col items-center">
                   <input
                     type="text"
                     placeholder="Group Name"
                     onChange={(e) => setGroupName(e.target.value)}
                     value={groupName}
-                    className="w-full p-2 bg-slate-200 rounded-xl outline-none"
+                    className="w-full p-2 bg-transparent rounded-xl outline-none"
                   />
-                  <button
-                    onClick={handleCreateGroup}
-                    className="bg-blue-400 p-2 text-white rounded-xl"
-                  >
-                    Create Group
-                  </button>
                 </div>
+                <button
+                  onClick={handleCreateGroup}
+                  className="bg-green-500 p-2 text-white rounded-xl"
+                >
+                  Create Group
+                </button>
               </div>
             </div>
           </div>
         )}
-        <div className="w-[90vw] flex flex-col md:w-[90%] h-[95%] rounded-xl bg-blue-400 bg-opacity-90">
+        <div className="w-[90vw] flex flex-col lg:w-[90%] h-[95%] rounded-xl bg-blue-400 bg-opacity-90">
           <div className="w-full h-[10%] p-2 gap-2 flex flex-col items-center justify-center">
             <h1 className="font-heading font-bold text-3xl text-white">
               SafeTalk

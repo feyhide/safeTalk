@@ -127,12 +127,12 @@ const MessageBox = () => {
 
   return (
     <div className="w-full h-full flex flex-col relative">
-      <div className="w-full h-[10vh] text-black p-2 flex items-center justify-center">
+      <div className="w-full h-[10svh] text-black p-2 flex items-center justify-center">
         <div className="font-slim bg-white flex gap-2 p-2 rounded-xl bg-opacity-90 items-center w-[100%] h-[100%]">
           <img
             onClick={handleCloseChat}
             src="/icons/back.png"
-            className="flex md:hidden w-8 h-8"
+            className="flex lg:hidden w-8 h-8"
           />
           <img
             src={selectedChat.userId.avatar}
@@ -145,7 +145,7 @@ const MessageBox = () => {
         {page != 0 ? (
           <div
             id="scrollable-chat-container"
-            className="w-full overflow-y-auto overflow-x-hidden h-[80vh] p-5"
+            className="w-full overflow-y-auto overflow-x-hidden h-[80svh] p-5"
             ref={chatContainerRef}
           >
             <div
@@ -180,7 +180,7 @@ const MessageBox = () => {
                   />
                 )}
                 <div
-                  className={`max-w-[50%] md:max-w-1/2 p-2 rounded-lg ${
+                  className={`max-w-[50%] lg:max-w-1/2 p-2 rounded-lg ${
                     msg.sender === currentUser._id
                       ? "bg-white text-black bg-opacity-50"
                       : "bg-white"
@@ -201,19 +201,19 @@ const MessageBox = () => {
             <div ref={endofMessage} />
           </div>
         ) : (
-          <div className="w-full text-white font-slim flex items-center justify-center bg-blue-400 h-[80vh]">
+          <div className="w-full text-white font-slim flex items-center justify-center bg-blue-400 h-[80svh]">
             Loading Chats
           </div>
         )}
       </div>
-      <div className="w-full min-h-[10vh] h-auto flex items-center absolute bottom-0 p-2">
+      <div className="w-full min-h-[10svh] h-auto flex items-center absolute bottom-0 p-2">
         <div className="font-slim bg-white rounded-xl bg-opacity-90 text-white flex justify-between gap-2 items-center w-full h-full">
           <textarea
             onChange={(e) => setMessage(e.target.value)}
             value={message}
             placeholder="Message"
             className="w-[90%] text-black p-2 outline-none bg-transparent resize-none"
-            style={{ minHeight: "100%", maxHeight: "20vh", overflowY: "auto" }}
+            style={{ minHeight: "100%", maxHeight: "20svh", overflowY: "auto" }}
             onInput={(e) => {
               e.target.style.height = "auto";
               e.target.style.height = `${Math.min(

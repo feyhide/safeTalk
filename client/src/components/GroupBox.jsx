@@ -126,12 +126,12 @@ const GroupBox = () => {
   return (
     <div className="w-full h-full flex flex-col relative">
       {addMember && <SearchMemberToAdd setAddMember={setAddMember} />}
-      <div className="w-full h-[10vh] text-black p-2 flex items-center justify-center">
+      <div className="w-full h-[10svh] text-black p-2 flex items-center justify-center">
         <div className="font-slim relative bg-white flex gap-2 p-2 rounded-xl bg-opacity-90 items-center w-[100%] h-[100%]">
           <img
             onClick={handleCloseGroup}
             src="/icons/back.png"
-            className="flex md:hidden w-8 h-8"
+            className="flex lg:hidden w-8 h-8"
           />
           <div className="relative flex -space-x-7">
             {selectedgroup &&
@@ -157,7 +157,7 @@ const GroupBox = () => {
       </div>
       <div>
         {page != 0 ? (
-          <div className="w-full overflow-y-auto overflow-x-hidden h-[80vh] p-5">
+          <div className="w-full overflow-y-auto overflow-x-hidden h-[80svh] p-5">
             <div
               onClick={fetchMoreData}
               className="w-full h-10 flex items-center justify-center font-slim text-black"
@@ -193,20 +193,20 @@ const GroupBox = () => {
                       className="h-8 rounded-full bg-black bg-opacity-50 border-2"
                     />
                   )}
-                  <div className="max-w-[50%] md:max-w-1/2 ">
+                  <div className="max-w-[50%] lg:max-w-1/2 ">
                     {msg.sender !== currentUser._id && sender && (
-                      <p className="text-xs md:text-sm text-white">
+                      <p className="text-xs lg:text-sm text-white">
                         {sender.username}
                       </p>
                     )}
                     <div
-                      className={`max-w-[100%] md:max-w-1/2 p-2 rounded-lg ${
+                      className={`max-w-[100%] lg:max-w-1/2 p-2 rounded-lg ${
                         msg.sender === currentUser._id
                           ? "bg-white text-black bg-opacity-50"
                           : "bg-white"
                       }`}
                     >
-                      <p className="w-auto text-sm md:text-md break-words whitespace-normal">
+                      <p className="w-auto text-sm lg:text-lg break-words whitespace-normal">
                         {msg.message}
                       </p>
                     </div>
@@ -224,19 +224,19 @@ const GroupBox = () => {
             <div ref={endofMessage} />
           </div>
         ) : (
-          <div className="w-full text-white font-slim flex items-center justify-center bg-blue-400 h-[80vh]">
+          <div className="w-full text-white font-slim flex items-center justify-center bg-blue-400 h-[80svh]">
             Loading Chats
           </div>
         )}
       </div>
-      <div className="w-full min-h-[10vh] h-auto flex items-center absolute bottom-0 p-2">
+      <div className="w-full min-h-[10svh] h-auto flex items-center absolute bottom-0 p-2">
         <div className="font-slim bg-white rounded-xl bg-opacity-90 text-white flex justify-between gap-2 items-center w-full h-full">
           <textarea
             onChange={(e) => setMessage(e.target.value)}
             value={message}
             placeholder="Message"
             className="w-[90%] text-black p-2 outline-none bg-transparent resize-none"
-            style={{ minHeight: "100%", maxHeight: "20vh", overflowY: "auto" }}
+            style={{ minHeight: "100%", maxHeight: "20svh", overflowY: "auto" }}
           />
           <div className="w-[10%] flex items-center justify-center">
             <img

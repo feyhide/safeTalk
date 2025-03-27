@@ -84,7 +84,7 @@ const AuthPage = ({ page, setPageState }) => {
     const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*\.\w{2,}$/;
     const passwordRegex =
       /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d@#$%^&*!]{6,20}$/;
-    const usernameRegex = /^[a-z][a-z0-9_]*$/;
+    const usernameRegex = /^[a-z][a-z0-9_]{2,14}$/;
     const { email, password, username } = formData;
 
     username.toLocaleLowerCase();
@@ -99,7 +99,7 @@ const AuthPage = ({ page, setPageState }) => {
         );
       }
       if (username.length < 3) {
-        return toast.error("Username is must be 3 letters long.");
+        return toast.error("Username is must be 3-15 letters long.");
       }
     }
     if (!email.length) {

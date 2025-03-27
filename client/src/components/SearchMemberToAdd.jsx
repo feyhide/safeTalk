@@ -99,7 +99,6 @@ const SearchMemberToAdd = ({ setAddMember }) => {
             <div className="w-full h-[20%] flex flex-col items-center justify-center">
               <h1 className="font-semibold text-xl">Add your connections</h1>
               <div className="w-full bg-blue-200 rounded-xl px-2  flex items-center">
-                @
                 <input
                   type="text"
                   placeholder="username"
@@ -123,7 +122,7 @@ const SearchMemberToAdd = ({ setAddMember }) => {
                         src={contact.avatar}
                         className="w-8 h-8 rounded-full border-2"
                       />
-                      <p>@{contact.username}</p>
+                      <p>{contact.username}</p>
                     </div>
                     <div className="w-auto">
                       <button

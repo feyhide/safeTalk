@@ -28,7 +28,7 @@ const SearchedContactsList = ({ searchContacts, setSearchContacts }) => {
               src={contact.avatar}
               className="w-8 h-8 rounded-full border-2"
             />
-            <p>@{contact.username}</p>
+            <p>{contact.username}</p>
           </div>
           <div className="w-auto">
             <button

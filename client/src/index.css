@@ -3,16 +3,6 @@
 @tailwind utilities;
 
 
-.no-spinner::-webkit-inner-spin-button,
-.no-spinner::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.no-spinner {
-  -moz-appearance: textfield; /* For Firefox */
-}
-
 .message {
   display: inline-block;
   word-wrap: break-word;  /* Ensure long words break and wrap */
@@ -21,4 +11,28 @@
   background-color: #f0f0f0; /* Add some background color */
   padding: 10px;
   border-radius: 10px;
+}
+
+.customScroll {
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    border-radius: 10px;background-color: #a5d9e7;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 10px;background-color: #ffffff;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &::-webkit-scrollbar-track {
+      background-color: #a5d9e7;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #ffffff;
+    }
+  }
 }

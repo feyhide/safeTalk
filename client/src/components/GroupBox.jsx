@@ -147,7 +147,7 @@ const GroupBox = () => {
                   />
                 ))}
           </div>
-          <p className="text-base">@{selectedgroup.groupName}</p>
+          <p className="text-base">{selectedgroup.groupName}</p>
           <img
             onClick={() => setAddMember(true)}
             src="/icons/addblack.png"

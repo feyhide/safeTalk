@@ -138,7 +138,7 @@ const MessageBox = () => {
             src={selectedChat.userId.avatar}
             className="w-8 h-8 rounded-full bg-black bg-opacity-50 border-2"
           />
-          <p className="text-base">@{selectedChat.userId.username}</p>
+          <p className="text-base">{selectedChat.userId.username}</p>
         </div>
       </div>
       <div>

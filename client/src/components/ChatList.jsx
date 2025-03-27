@@ -10,6 +10,61 @@ import { addGroup, resetGroup } from "../redux/groupSlice";
 import { useSocket } from "../context/SocketContext";
 import { DOMAIN } from "../constant/constant.js";
 
+const Listing = ({ createFunc, changingFunc, mappingData, type }) => {
+  return (
+    <div className={`px-1 w-full max-h-[45%] py-2 flex flex-col gap-1`}>
+      <div className="flex w-full min-h-[10%] justify-between items-center">
+        <h1 className="font-heading capitalize font-semibold text-lg text-white">
+          {type}
+        </h1>
+        <img onClick={createFunc} src="/icons/add.png" className="w-6 h-6" />
+      </div>
+      <div className="max-h-[90%] customScroll overflow-y-auto overflow-x-hidden text-white font-slim w-full">
+        {mappingData.map((data, index) => (
+          <div
+            key={index}
+            className="w-full flex justify-between items-center py-2"
+          >
+            <div
+              onClick={() => changingFunc(data)}
+              className="w-auto flex h-full items-center gap-2"
+            >
+              {type === "groups" ? (
+                <div className="relative flex -space-x-7">
+                  {data.members.slice(0, 4).map((member, index) => (
+                    <img
+                      key={index}
+                      src={member.avatar}
+                      alt="Avatar"
+                      className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
+                      style={{ zIndex: data.members.length + index }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <img
+                  src={data.userId.avatar}
+                  className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
+                />
+              )}
+              <p>
+                {type === "friends" ? data.userId.username : data.groupName}
+              </p>
+            </div>
+            {/* <img
+                      onClick={() => {
+                        setRemoveConnect(people);
+                      }}
+                      className="w-5 h-5"
+                      src="/icons/delete.png"
+                    /> */}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const ChatList = ({ setLogOut }) => {
   const socket = useSocket();
   const { currentUser } = useSelector((state) => state.user);
@@ -196,7 +251,6 @@ const ChatList = ({ setLogOut }) => {
                     Connect with some new mates
                   </h1>
                   <div className="w-full bg-blue-200 rounded-xl px-2 flex items-center">
-                    @
                     <input
                       type="text"
                       placeholder="username"
@@ -257,7 +311,7 @@ const ChatList = ({ setLogOut }) => {
           </div>
         )}
         <div className="w-[90vw] flex flex-col md:w-[90%] h-[95%] rounded-xl bg-blue-400 bg-opacity-90">
-          <div className="w-full h-auto p-2 flex flex-col items-center justify-center">
+          <div className="w-full h-[10%] p-2 gap-2 flex flex-col items-center justify-center">
             <h1 className="font-heading font-bold text-3xl text-white">
               SafeTalk
             </h1>
@@ -267,7 +321,7 @@ const ChatList = ({ setLogOut }) => {
                   src={currentUser?.avatar}
                   className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
                 />
-                <p className="text-base">@{currentUser?.username}</p>
+                <p className="text-base">{currentUser?.username}</p>
               </div>
               <img
                 onClick={() => setLogOut(true)}
@@ -276,91 +330,18 @@ const ChatList = ({ setLogOut }) => {
               />
             </div>
           </div>
-          <div className="p-5 w-full max-h-[45vh] flex flex-col gap-1">
-            <div className="flex w-full h-[10%] justify-between items-center">
-              <h1 className="font-heading font-semibold text-lg text-white">
-                Connected Peoples
-              </h1>
-              <img
-                onClick={() => setSendConnect(true)}
-                src="/icons/add.png"
-                className="w-6 h-6"
-              />
-            </div>
-            <div className="max-h-[90%] overflow-y-auto text-white font-slim w-full">
-              {currentUser &&
-                currentUser.connectedPeoples.map((people, index) => (
-                  <div
-                    key={index}
-                    className="w-full flex justify-between items-center py-2"
-                  >
-                    <div
-                      onClick={() => {
-                        handleChangeChatUser(people);
-                      }}
-                      className="w-auto flex h-full items-center gap-2"
-                    >
-                      <img
-                        src={people.userId.avatar}
-                        className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
-                      />
-                      <p>@{people.userId.username}</p>
-                    </div>
-                    <img
-                      onClick={() => {
-                        setRemoveConnect(people);
-                      }}
-                      className="w-5 h-5"
-                      src="/icons/delete.png"
-                    />
-                  </div>
-                ))}
-            </div>
-          </div>
-          <div className="p-5 w-full max-h-[45vh] flex flex-col gap-1">
-            <div className="flex w-full h-[10%] justify-between items-center">
-              <h1 className="font-heading font-semibold text-lg text-white">
-                Connected Groups
-              </h1>
-              <img
-                onClick={() => setCreateGroup(true)}
-                src="/icons/add.png"
-                className="w-6 h-6"
-              />
-            </div>
-            <div className="max-h-[90%] overflow-y-auto text-white font-slim w-full">
-              {currentUser &&
-                currentUser.connectedGroups.map((group, index) => (
-                  <div
-                    key={index}
-                    className="w-full flex justify-between items-center py-2"
-                  >
-                    <div
-                      onClick={() => {
-                        handleChangeGroup(group);
-                      }}
-                      className="w-auto flex h-full items-center gap-2"
-                    >
-                      <div className="relative flex -space-x-7">
-                        {group &&
-                          group.members
-                            .slice(0, 4)
-                            .map((member, index) => (
-                              <img
-                                key={index}
-                                src={member.avatar}
-                                alt="Avatar"
-                                className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
-                                style={{ zIndex: group.members.length + index }}
-                              />
-                            ))}
-                      </div>
-                      <p>{group.groupName}</p>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
+          <Listing
+            mappingData={currentUser.connectedPeoples}
+            createFunc={() => setSendConnect(true)}
+            changingFunc={handleChangeChatUser}
+            type={"friends"}
+          />
+          <Listing
+            mappingData={currentUser.connectedGroups}
+            createFunc={() => setCreateGroup(true)}
+            changingFunc={handleChangeGroup}
+            type={"groups"}
+          />
         </div>
       </div>
     </>

@@ -183,8 +183,7 @@ const AuthPage = ({ page, setPageState }) => {
                   name="username"
                   value={formData.username}
                   type="text"
-                  placeholder="Username"
-                  className="outline-none bg-white bg-opacity-30 p-2 rounded-xl text-xs lowercase md:text-base"
+                  className="outline-none bg-white bg-opacity-30 p-2 rounded-xl text-xs md:text-base"
                 />
               </div>
             )}
@@ -195,7 +194,6 @@ const AuthPage = ({ page, setPageState }) => {
                 name="email"
                 value={formData.email}
                 type="email"
-                placeholder="Email"
                 className="outline-none bg-white bg-opacity-30 p-2 rounded-xl text-xs md:text-base"
               />
             </div>
@@ -214,7 +212,6 @@ const AuthPage = ({ page, setPageState }) => {
                   name="password"
                   value={formData.password}
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password"
                   className="outline-none bg-white bg-opacity-30 p-2 rounded-xl text-xs md:text-base"
                 />
               </div>
@@ -235,7 +232,7 @@ const AuthPage = ({ page, setPageState }) => {
                 onClick={() =>
                   setPageState(page === "signin" ? "signup" : "signin")
                 }
-                className="text-xs sm:text-sm md:text-base underline text-gray-700 hover:text-blue-600"
+                className="text-xs text-center sm:text-sm md:text-base underline text-gray-700 hover:text-blue-600"
               >
                 {page === "signin"
                   ? "New Here ? Why not create an account and join us"

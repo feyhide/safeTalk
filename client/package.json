@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mantine/hooks": "^7.17.3",
     "@reduxjs/toolkit": "^2.4.0",
-    "axios": "^1.7.8",
+    "@tanstack/react-query": "^5.69.0",
+    "axios": "^1.8.4",
     "crypto-js": "^4.2.0",
     "node-rsa": "^1.1.1",
     "react": "^18.3.1",

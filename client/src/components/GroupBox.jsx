@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -12,102 +11,65 @@ import { useSocket } from "../context/SocketContext.jsx";
 import SearchMemberToAdd from "./SearchMemberToAdd.jsx";
 import { DOMAIN } from "../constant/constant.js";
 import { resetUser } from "../redux/userSlice.js";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useIntersection } from "@mantine/hooks";
+import axios from "axios";
 
 const GroupBox = () => {
-  //   window.addEventListener("beforeunload", (event) => {
-  //     dispatch(resetGroup());
-  //   });
   const socket = useSocket();
 
-  const { selectedgroup, groupData, page, total } = useSelector(
-    (state) => state.group
-  );
+  const { selectedgroup, groupData } = useSelector((state) => state.group);
+  const [addMember, setAddMember] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [addMember, setAddMember] = useState(false);
   const dispatch = useDispatch();
-  const [scroll, setScroll] = useState(true);
-  const endofMessage = useRef(null);
+  const chatContainerRef = useRef(null);
+  const prevScrollHeightRef = useRef(0);
 
-  useEffect(() => {
-    if (scroll) {
-      endofMessage.current?.scrollIntoView();
-    }
-  }, [groupData]);
-
-  const fetchMessages = async () => {
-    if (loading) return;
-    if (page >= total && page != 0 && total != 0) {
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await fetch(DOMAIN + `api/v1/group/get-messages`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          groupId: selectedgroup._id,
-          page: page + 1,
-          limit: 15,
-        }),
-      });
-      if (res.status === 401 || res.status === 403) {
-        console.warn("Session expired. Redirecting to login...");
-        dispatch(reset());
-        dispatch(resetGroup());
-        dispatch(resetUser());
-        window.location.href = "/";
-        return;
-      }
-      if (page + 1 === 1) {
-        dispatch(refreshgroup());
-      }
-      const data = await res.json();
-      if (res.status === 401 || res.status === 403) {
-        console.warn("Session expired. Redirecting to login...");
-        dispatch(reset());
-        dispatch(resetGroup());
-        dispatch(resetUser());
-        window.location.href = "/";
-        return;
-      }
-      if (res.ok) {
-        dispatch(appendOlderMessagesGroup(data.messages));
-        dispatch(
-          updatePageAndTotal({
-            page: data.pagination.page,
-            total: data.pagination.totalPages,
-          })
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: ["group", selectedgroup._id],
+      queryFn: async ({ pageParam = 1 }) => {
+        const { data } = await axios.get(
+          `${DOMAIN}api/v1/group/get-messages?group=${selectedgroup._id}&page=${pageParam}`,
+          { withCredentials: true }
         );
-      } else {
-        console.error("Failed to fetch group messages:", data);
-      }
-    } catch (error) {
-      console.error("Error fetching group messages:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        console.log(data);
+        return data.success ? data : { data: [], totalPages: 1 };
+      },
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, allPages) => {
+        const nextPage = allPages.length + 1;
+        return nextPage <= lastPage.totalPages ? nextPage : undefined;
+      },
+      enabled: !!selectedgroup._id,
+    });
 
-  const fetchMoreData = () => {
-    setScroll(false);
-    fetchMessages(page + 1);
-  };
+  const { ref, entry } = useIntersection({ root: null, threshold: 1 });
 
   useEffect(() => {
-    if (selectedgroup) {
-      dispatch(refreshgroup());
-      fetchMessages();
+    if (selectedgroup?._id && entry?.isIntersecting && hasNextPage) {
+      console.log("fetching next");
+      fetchNextPage();
     }
-  }, []);
+  }, [selectedgroup?._id, entry, hasNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    if (!chatContainerRef.current || !data) return;
+
+    const chatBox = chatContainerRef.current;
+
+    if (data.pages.length === 1) {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    } else {
+      chatBox.scrollTop = chatBox.scrollHeight - prevScrollHeightRef.current;
+    }
+
+    prevScrollHeightRef.current = chatBox.scrollHeight;
+  }, [data]);
 
   const handleSendMessage = () => {
     if (selectedgroup && message.trim()) {
-      setScroll(true);
       const memberIds = selectedgroup.members.map((member) => member._id);
       socket.emit("sendMessageGroup", {
         sender: currentUser._id,
@@ -155,31 +117,31 @@ const GroupBox = () => {
           />
         </div>
       </div>
-      <div>
-        {page != 0 ? (
-          <div className="w-full overflow-y-auto overflow-x-hidden h-[80svh] p-5">
-            <div
-              onClick={fetchMoreData}
-              className="w-full h-10 flex items-center justify-center font-slim text-black"
-            >
-              {loading && (
-                <p className="p-2 bg-white rounded-xl w-fit">Loading</p>
-              )}
-              {!loading && (
-                <p className="p-2 bg-white rounded-xl w-fit">
-                  {page >= total && page != 0 && total != 0
-                    ? ""
-                    : "Load More Messages"}
-                </p>
-              )}
+      <div className="p-1 w-full h-full">
+        <div
+          ref={chatContainerRef}
+          className="w-full overflow-y-auto overflow-x-hidden customScroll px-2 h-[77svh]"
+        >
+          {isFetchingNextPage && (
+            <div className="text-center text-white text-sm mb-2">
+              Fetching more...
             </div>
-            {groupData.map((msg, index) => {
+          )}
+          {data?.pages
+            .flatMap((group) => group.data) // Flatten all pages into a single array
+            .reverse() // Reverse to show new messages at the bottom
+            .map((msg, index) => {
+              const isFirstItem = index === 0; // First item in reversed list
+              if (isFirstItem) {
+                console.log("message to which tig", msg);
+              }
               const sender = selectedgroup.members.find(
                 (member) => member._id === msg.sender
               );
               return (
                 <div
-                  key={index}
+                  ref={isFirstItem ? ref : null} // Trigger loading more when first message is visible
+                  key={msg._id}
                   className={`flex font-slim gap-2 w-full h-auto ${
                     msg.sender === currentUser._id
                       ? "justify-end"
@@ -221,13 +183,56 @@ const GroupBox = () => {
                 </div>
               );
             })}
-            <div ref={endofMessage} />
-          </div>
-        ) : (
-          <div className="w-full text-white font-slim flex items-center justify-center bg-blue-400 h-[80svh]">
-            Loading Chats
-          </div>
-        )}
+
+          {groupData.map((msg, index) => {
+            const sender = selectedgroup.members.find(
+              (member) => member._id === msg.sender
+            );
+            return (
+              <div
+                key={index}
+                className={`flex font-slim gap-2 w-full h-auto ${
+                  msg.sender === currentUser._id
+                    ? "justify-end"
+                    : "justify-start"
+                } mb-4`}
+              >
+                {msg.sender !== currentUser._id && sender && (
+                  <img
+                    src={sender.avatar}
+                    alt="Sender Avatar"
+                    className="h-8 rounded-full bg-black bg-opacity-50 border-2"
+                  />
+                )}
+                <div className="max-w-[50%] lg:max-w-1/2 ">
+                  {msg.sender !== currentUser._id && sender && (
+                    <p className="text-xs lg:text-sm text-white">
+                      {sender.username}
+                    </p>
+                  )}
+                  <div
+                    className={`max-w-[100%] lg:max-w-1/2 p-2 rounded-lg ${
+                      msg.sender === currentUser._id
+                        ? "bg-white text-black bg-opacity-50"
+                        : "bg-white"
+                    }`}
+                  >
+                    <p className="w-auto text-sm lg:text-lg break-words whitespace-normal">
+                      {msg.message}
+                    </p>
+                  </div>
+                </div>
+                {msg.sender === currentUser._id && (
+                  <img
+                    src={currentUser.avatar}
+                    className="h-8 rounded-full bg-black bg-opacity-50 border-2"
+                    alt="Your Avatar"
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
       <div className="w-full min-h-[10svh] h-auto flex items-center absolute bottom-0 p-2">
         <div className="font-slim bg-white rounded-xl bg-opacity-90 text-white flex justify-between gap-2 items-center w-full h-full">

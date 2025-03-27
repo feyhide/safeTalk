@@ -1,89 +1,68 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  appendOlderMessages,
-  refreshChat,
-  reset,
-  updatePageAndTotal,
-} from "../redux/chatSlice.js";
+import { appendOlderMessages, refreshChat, reset } from "../redux/chatSlice.js";
 import { useSocket } from "../context/SocketContext.jsx";
 import { resetGroup } from "../redux/groupSlice.js";
 import { DOMAIN } from "../constant/constant.js";
 import { resetUser } from "../redux/userSlice.js";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useIntersection } from "@mantine/hooks";
+import axios from "axios";
 
 const MessageBox = () => {
-  //   window.addEventListener("beforeunload", (event) => {
-  //     dispatch(reset());
-  //   });
+  // window.addEventListener("beforeunload", (event) => {
+  //   dispatch(reset());
+  // });
   const socket = useSocket();
-  const { selectedChat, chatData, page, total } = useSelector(
-    (state) => state.chat
-  );
+  const { selectedChat, chatData } = useSelector((state) => state.chat);
   const { currentUser } = useSelector((state) => state.user);
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
-  const endofMessage = useRef(null);
   const chatContainerRef = useRef(null);
-  const [scroll, setScroll] = useState(true);
+  const prevScrollHeightRef = useRef(0);
+
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: ["chat", selectedChat.chatId],
+      queryFn: async ({ pageParam = 1 }) => {
+        const { data } = await axios.get(
+          `${DOMAIN}api/v1/chat/get-messages?chat=${selectedChat.chatId}&page=${pageParam}`,
+          { withCredentials: true }
+        );
+        console.log(data);
+        return data.success ? data : { data: [], totalPages: 1 };
+      },
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, allPages) => {
+        const nextPage = allPages.length + 1;
+        return nextPage <= lastPage.totalPages ? nextPage : undefined;
+      },
+      enabled: !!selectedChat.chatId,
+    });
+
+  const { ref, entry } = useIntersection({ root: null, threshold: 1 });
 
   useEffect(() => {
-    if (scroll) {
-      endofMessage.current?.scrollIntoView();
+    if (selectedChat && entry?.isIntersecting && hasNextPage) {
+      console.log("fetching next");
+      fetchNextPage();
     }
-  }, [chatData]);
+  }, [selectedChat, entry, hasNextPage, fetchNextPage]);
 
-  const fetchMessages = async () => {
-    if (loading) return;
-    setLoading(true);
-    if (page >= total && page != 0 && total != 0) {
-      return;
+  useEffect(() => {
+    if (!chatContainerRef.current || !data) return;
+
+    const chatBox = chatContainerRef.current;
+
+    if (data.pages.length === 1) {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    } else {
+      chatBox.scrollTop = chatBox.scrollHeight - prevScrollHeightRef.current;
     }
-    try {
-      const res = await fetch(DOMAIN + `api/v1/chat/get-messages`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chatId: selectedChat.chatId,
-          page: page + 1,
-          limit: 15,
-        }),
-      });
-      if (res.status === 401 || res.status === 403) {
-        console.warn("Session expired. Redirecting to login...");
-        dispatch(reset());
-        dispatch(resetGroup());
-        dispatch(resetUser());
-        window.location.href = "/";
-        return;
-      }
-      if (page + 1 === 1) {
-        dispatch(refreshChat());
-      }
-      const data = await res.json();
-      if (res.ok) {
-        dispatch(appendOlderMessages(data.messages));
-        if (chatData.length > 0 || data.pagination.page == 1) {
-          dispatch(
-            updatePageAndTotal({
-              page: data.pagination.page,
-              total: data.pagination.totalPages,
-            })
-          );
-        }
-      } else {
-        console.error("Failed to fetch messages:", data);
-      }
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+    prevScrollHeightRef.current = chatBox.scrollHeight;
+  }, [data]);
 
   const handleSendMessage = () => {
     if (selectedChat && message.trim()) {
@@ -106,19 +85,11 @@ const MessageBox = () => {
         recipientPbcKey: activeRecipientPublicKey,
       });
       setMessage("");
-
-      setScroll(true);
     }
-  };
-
-  const fetchMoreData = () => {
-    setScroll(false);
-    fetchMessages(page + 1);
   };
 
   useEffect(() => {
     dispatch(refreshChat());
-    fetchMessages();
   }, [selectedChat]);
 
   const handleCloseChat = () => {
@@ -127,8 +98,8 @@ const MessageBox = () => {
 
   return (
     <div className="w-full h-full flex flex-col relative">
-      <div className="w-full h-[10svh] text-black p-2 flex items-center justify-center">
-        <div className="font-slim bg-white flex gap-2 p-2 rounded-xl bg-opacity-90 items-center w-[100%] h-[100%]">
+      <div className="w-full h-auto text-black px-2 pt-2 flex items-center justify-center">
+        <div className="font-slim bg-white flex gap-2 p-2 rounded-xl bg-opacity-90 items-center w-[100%] h-[8vh]">
           <img
             onClick={handleCloseChat}
             src="/icons/back.png"
@@ -141,73 +112,64 @@ const MessageBox = () => {
           <p className="text-base">{selectedChat.userId.username}</p>
         </div>
       </div>
-      <div>
-        {page != 0 ? (
-          <div
-            id="scrollable-chat-container"
-            className="w-full overflow-y-auto overflow-x-hidden h-[80svh] p-5"
-            ref={chatContainerRef}
-          >
-            <div
-              onClick={fetchMoreData}
-              className="w-full h-10 flex items-center justify-center font-slim text-black"
-            >
-              {loading && (
-                <p className="p-2 bg-white rounded-xl w-fit">Loading</p>
-              )}
-              {!loading && (
-                <p className="p-2 bg-white rounded-xl w-fit">
-                  {(page >= total && page != 0 && total != 0) ||
-                  (chatData.length == 0 && page == 1 && total == 0)
-                    ? ""
-                    : "Load More Messages"}
-                </p>
-              )}
+      <div className="p-1 w-full h-full">
+        <div
+          ref={chatContainerRef}
+          className="w-full overflow-y-auto overflow-x-hidden customScroll px-2 h-[77svh]"
+        >
+          {isFetchingNextPage && (
+            <div className="text-center text-white text-sm mb-2">
+              Fetching more...
             </div>
-            {chatData.map((msg, index) => (
-              <div
-                key={index}
-                className={`flex items-center gap-2 w-full h-auto ${
-                  msg.sender === currentUser._id
-                    ? "justify-end"
-                    : "justify-start"
-                } mb-4`}
-              >
-                {msg.sender != currentUser._id && (
-                  <img
-                    src={selectedChat.userId.avatar}
-                    className="h-8 rounded-full bg-black bg-opacity-50 border-2 "
-                  />
-                )}
+          )}
+          {data?.pages
+            .flatMap((group) => group.data) // Flatten all pages into a single array
+            .reverse() // Reverse to show new messages at the bottom
+            .map((msg, index) => {
+              const isFirstItem = index === 0; // First item in reversed list
+              if (isFirstItem) {
+                console.log("message to which tig", msg);
+              }
+              return (
                 <div
-                  className={`max-w-[50%] lg:max-w-1/2 p-2 rounded-lg ${
+                  ref={isFirstItem ? ref : null} // Trigger loading more when first message is visible
+                  key={msg._id}
+                  className={`flex items-center gap-2 w-full h-auto ${
                     msg.sender === currentUser._id
-                      ? "bg-white text-black bg-opacity-50"
-                      : "bg-white"
-                  }`}
+                      ? "justify-end"
+                      : "justify-start"
+                  } mb-4`}
                 >
-                  <p className="w-auto break-words font-slim whitespace-normal">
-                    {msg.message}
-                  </p>
+                  {msg.sender !== currentUser._id && (
+                    <img
+                      src={selectedChat.userId.avatar}
+                      className="h-8 rounded-full bg-black bg-opacity-50 border-2"
+                    />
+                  )}
+                  <div
+                    className={`max-w-[50%] lg:max-w-1/2 p-2 rounded-lg ${
+                      msg.sender === currentUser._id
+                        ? "bg-white text-black bg-opacity-50"
+                        : "bg-white"
+                    }`}
+                  >
+                    <p className="w-auto text-sm break-words font-slim whitespace-normal">
+                      {msg.message}
+                    </p>
+                  </div>
+                  {msg.sender === currentUser._id && (
+                    <img
+                      src={currentUser.avatar}
+                      className="h-8 rounded-full bg-black bg-opacity-50 border-2"
+                    />
+                  )}
                 </div>
-                {msg.sender === currentUser._id && (
-                  <img
-                    src={currentUser.avatar}
-                    className="h-8 rounded-full bg-black bg-opacity-50 border-2 "
-                  />
-                )}
-              </div>
-            ))}
-            <div ref={endofMessage} />
-          </div>
-        ) : (
-          <div className="w-full text-white font-slim flex items-center justify-center bg-blue-400 h-[80svh]">
-            Loading Chats
-          </div>
-        )}
+              );
+            })}
+        </div>
       </div>
       <div className="w-full min-h-[10svh] h-auto flex items-center absolute bottom-0 p-2">
-        <div className="font-slim bg-white rounded-xl bg-opacity-90 text-white flex justify-between gap-2 items-center w-full h-full">
+        <div className="font-slim bg-white rounded-xl text-white flex justify-between gap-2 items-center w-full h-full">
           <textarea
             onChange={(e) => setMessage(e.target.value)}
             value={message}

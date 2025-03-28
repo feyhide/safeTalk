@@ -3,18 +3,12 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   selectedgroup: null,
   groupData: [],
-  page: 1,
-  total: 15,
 };
 
 const groupSlice = createSlice({
   name: "group",
   initialState,
   reducers: {
-    updatePageAndTotal: (state, action) => {
-      state.page = action.payload.page;
-      state.total = action.payload.total;
-    },
     addGroup: (state, action) => {
       state.selectedgroup = action.payload;
     },
@@ -26,12 +20,11 @@ const groupSlice = createSlice({
     },
     appendMessageGroup: (state, action) => {
       if (state.selectedgroup) {
-        if (!Array.isArray(state.groupData)) {
-          state.groupData = [];
+        if (!Array.isArray(state.chatData)) {
+          state.chatData = [];
         }
 
         const messagePayload = action.payload;
-
         if (
           messagePayload &&
           typeof messagePayload === "object" &&
@@ -39,37 +32,44 @@ const groupSlice = createSlice({
           messagePayload.groupId &&
           messagePayload.message
         ) {
-          state.groupData.push(messagePayload);
+          if (state.groupData.length > 0) {
+            state.groupData[0].messages.unshift(messagePayload);
+          } else {
+            state.groupData.unshift({
+              page: 1,
+              messages: [messagePayload],
+            });
+          }
         } else {
           console.warn("Invalid message format", messagePayload);
         }
       }
     },
     appendOlderMessagesGroup: (state, action) => {
-      if (state.selectedgroup) {
-        if (!Array.isArray(state.groupData)) {
-          state.groupData = [];
-        }
+      if (!state.selectedgroup) return;
 
-        const olderMessages = action.payload;
+      if (!Array.isArray(state.groupData)) {
+        state.groupData = [];
+      }
 
-        if (Array.isArray(olderMessages)) {
-          state.groupData = [...olderMessages, ...state.groupData];
-        } else {
-          console.warn("Invalid older messages format", olderMessages);
-        }
+      const { messages, page } = action.payload;
+
+      if (state.groupData.some((p) => p.page === page)) {
+        return;
+      }
+
+      if (Array.isArray(messages)) {
+        state.groupData.push({ page, messages });
+      } else {
+        console.warn("Invalid older messages format", messages);
       }
     },
     resetGroup: (state) => {
       state.selectedgroup = null;
       state.groupData = [];
-      state.page = 0;
-      state.total = 0;
     },
     refreshgroup: (state) => {
       state.groupData = [];
-      state.page = 0;
-      state.total = 0;
     },
   },
 });

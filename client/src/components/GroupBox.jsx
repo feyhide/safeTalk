@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -11,7 +12,7 @@ import { useSocket } from "../context/SocketContext.jsx";
 import SearchMemberToAdd from "./SearchMemberToAdd.jsx";
 import { DOMAIN } from "../constant/constant.js";
 import { resetUser } from "../redux/userSlice.js";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useIntersection } from "@mantine/hooks";
 import axios from "axios";
 
@@ -26,6 +27,14 @@ const GroupBox = () => {
   const chatContainerRef = useRef(null);
   const prevScrollHeightRef = useRef(0);
 
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (selectedgroup._id) {
+      queryClient.removeQueries(["group"]);
+    }
+  }, [selectedgroup._id]);
+
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["group", selectedgroup._id],
@@ -34,8 +43,16 @@ const GroupBox = () => {
           `${DOMAIN}api/v1/group/get-messages?group=${selectedgroup._id}&page=${pageParam}`,
           { withCredentials: true }
         );
-        console.log(data);
-        return data.success ? data : { data: [], totalPages: 1 };
+
+        if (data.success) {
+          dispatch(
+            appendOlderMessagesGroup({
+              messages: data.data,
+              page: pageParam,
+            })
+          );
+          return data.success ? data : { data: [], totalPages: 1 };
+        }
       },
       initialPageParam: 1,
       getNextPageParam: (lastPage, allPages) => {
@@ -48,11 +65,22 @@ const GroupBox = () => {
   const { ref, entry } = useIntersection({ root: null, threshold: 1 });
 
   useEffect(() => {
-    if (selectedgroup?._id && entry?.isIntersecting && hasNextPage) {
-      console.log("fetching next");
+    if (selectedgroup && entry?.isIntersecting && hasNextPage) {
       fetchNextPage();
     }
-  }, [selectedgroup?._id, entry, hasNextPage, fetchNextPage]);
+  }, [selectedgroup, entry, hasNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    if (!chatContainerRef.current || !data) return;
+
+    const chatBox = chatContainerRef.current;
+
+    setTimeout(() => {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }, 100);
+
+    prevScrollHeightRef.current = chatBox.scrollHeight;
+  }, [groupData?.[0]?.messages?.length]);
 
   useEffect(() => {
     if (!chatContainerRef.current || !data) return;
@@ -66,7 +94,7 @@ const GroupBox = () => {
     }
 
     prevScrollHeightRef.current = chatBox.scrollHeight;
-  }, [data]);
+  }, [groupData?.length]);
 
   const handleSendMessage = () => {
     if (selectedgroup && message.trim()) {
@@ -127,21 +155,18 @@ const GroupBox = () => {
               Fetching more...
             </div>
           )}
-          {data?.pages
-            .flatMap((group) => group.data) // Flatten all pages into a single array
-            .reverse() // Reverse to show new messages at the bottom
+          {groupData
+            .flatMap((group) => group.messages)
+            .reverse()
             .map((msg, index) => {
-              const isFirstItem = index === 0; // First item in reversed list
-              if (isFirstItem) {
-                console.log("message to which tig", msg);
-              }
+              const isFirstItem = index === 0;
               const sender = selectedgroup.members.find(
                 (member) => member._id === msg.sender
               );
               return (
                 <div
-                  ref={isFirstItem ? ref : null} // Trigger loading more when first message is visible
-                  key={msg._id}
+                  ref={isFirstItem ? ref : null}
+                  key={`index_${index}`}
                   className={`flex font-slim gap-2 w-full h-auto ${
                     msg.sender === currentUser._id
                       ? "justify-end"
@@ -183,55 +208,6 @@ const GroupBox = () => {
                 </div>
               );
             })}
-
-          {groupData.map((msg, index) => {
-            const sender = selectedgroup.members.find(
-              (member) => member._id === msg.sender
-            );
-            return (
-              <div
-                key={index}
-                className={`flex font-slim gap-2 w-full h-auto ${
-                  msg.sender === currentUser._id
-                    ? "justify-end"
-                    : "justify-start"
-                } mb-4`}
-              >
-                {msg.sender !== currentUser._id && sender && (
-                  <img
-                    src={sender.avatar}
-                    alt="Sender Avatar"
-                    className="h-8 rounded-full bg-black bg-opacity-50 border-2"
-                  />
-                )}
-                <div className="max-w-[50%] lg:max-w-1/2 ">
-                  {msg.sender !== currentUser._id && sender && (
-                    <p className="text-xs lg:text-sm text-white">
-                      {sender.username}
-                    </p>
-                  )}
-                  <div
-                    className={`max-w-[100%] lg:max-w-1/2 p-2 rounded-lg ${
-                      msg.sender === currentUser._id
-                        ? "bg-white text-black bg-opacity-50"
-                        : "bg-white"
-                    }`}
-                  >
-                    <p className="w-auto text-sm lg:text-lg break-words whitespace-normal">
-                      {msg.message}
-                    </p>
-                  </div>
-                </div>
-                {msg.sender === currentUser._id && (
-                  <img
-                    src={currentUser.avatar}
-                    className="h-8 rounded-full bg-black bg-opacity-50 border-2"
-                    alt="Your Avatar"
-                  />
-                )}
-              </div>
-            );
-          })}
         </div>
       </div>
       <div className="w-full min-h-[10svh] h-auto flex items-center absolute bottom-0 p-2">

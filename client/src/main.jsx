@@ -7,7 +7,16 @@ import { SocketProvider } from "./context/SocketContext.jsx";
 import RootApp from "./App.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      cacheTime: 0,
+      staleTime: 0,
+      refetchOnMount: true, // Ensures fresh data on mount
+      refetchOnWindowFocus: false, // Optional: Prevents refetching on tab switch
+    },
+  },
+});
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>

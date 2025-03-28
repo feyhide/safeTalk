@@ -72,21 +72,12 @@ export const SocketProvider = ({ children }) => {
       };
 
       const handleReceivedMessage = (messagePayload) => {
-        const {
-          messageEncrypted,
-          iv,
-          sender,
-          recipient,
-          senderKeyId,
-          recipientKeyId,
-        } = messagePayload;
         if (isMessageForSelectedChat(messagePayload)) {
           dispatch(appendMessage(messagePayload));
         }
       };
 
       const receivedGroupMessage = (messagePayload) => {
-        const { message, sender, groupId } = messagePayload;
         if (isMessageForSelectedGroup(messagePayload)) {
           dispatch(appendMessageGroup(messagePayload));
         }

@@ -6,14 +6,11 @@ import { useSocket } from "../context/SocketContext.jsx";
 import { resetGroup } from "../redux/groupSlice.js";
 import { DOMAIN } from "../constant/constant.js";
 import { resetUser } from "../redux/userSlice.js";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useIntersection } from "@mantine/hooks";
 import axios from "axios";
 
 const MessageBox = () => {
-  // window.addEventListener("beforeunload", (event) => {
-  //   dispatch(reset());
-  // });
   const socket = useSocket();
   const { selectedChat, chatData } = useSelector((state) => state.chat);
   const { currentUser } = useSelector((state) => state.user);
@@ -21,6 +18,14 @@ const MessageBox = () => {
   const dispatch = useDispatch();
   const chatContainerRef = useRef(null);
   const prevScrollHeightRef = useRef(0);
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (selectedChat.chatId) {
+      queryClient.removeQueries(["chat"]);
+    }
+  }, [selectedChat.chatId]);
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
@@ -30,8 +35,16 @@ const MessageBox = () => {
           `${DOMAIN}api/v1/chat/get-messages?chat=${selectedChat.chatId}&page=${pageParam}`,
           { withCredentials: true }
         );
-        console.log(data);
-        return data.success ? data : { data: [], totalPages: 1 };
+
+        if (data.success) {
+          dispatch(
+            appendOlderMessages({
+              messages: data.data,
+              page: pageParam,
+            })
+          );
+          return data.success ? data : { data: [], totalPages: 1 };
+        }
       },
       initialPageParam: 1,
       getNextPageParam: (lastPage, allPages) => {
@@ -45,10 +58,21 @@ const MessageBox = () => {
 
   useEffect(() => {
     if (selectedChat && entry?.isIntersecting && hasNextPage) {
-      console.log("fetching next");
       fetchNextPage();
     }
   }, [selectedChat, entry, hasNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    if (!chatContainerRef.current || !data) return;
+
+    const chatBox = chatContainerRef.current;
+
+    setTimeout(() => {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }, 100);
+
+    prevScrollHeightRef.current = chatBox.scrollHeight;
+  }, [chatData?.[0]?.messages?.length]);
 
   useEffect(() => {
     if (!chatContainerRef.current || !data) return;
@@ -62,7 +86,7 @@ const MessageBox = () => {
     }
 
     prevScrollHeightRef.current = chatBox.scrollHeight;
-  }, [data]);
+  }, [chatData?.length]);
 
   const handleSendMessage = () => {
     if (selectedChat && message.trim()) {
@@ -122,18 +146,15 @@ const MessageBox = () => {
               Fetching more...
             </div>
           )}
-          {data?.pages
-            .flatMap((group) => group.data) // Flatten all pages into a single array
-            .reverse() // Reverse to show new messages at the bottom
+          {chatData
+            .flatMap((group) => group.messages)
+            .reverse()
             .map((msg, index) => {
-              const isFirstItem = index === 0; // First item in reversed list
-              if (isFirstItem) {
-                console.log("message to which tig", msg);
-              }
+              const isFirstItem = index === 0;
               return (
                 <div
-                  ref={isFirstItem ? ref : null} // Trigger loading more when first message is visible
                   key={msg._id}
+                  ref={isFirstItem ? ref : null}
                   className={`flex items-center gap-2 w-full h-auto ${
                     msg.sender === currentUser._id
                       ? "justify-end"

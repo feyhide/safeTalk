@@ -59,6 +59,8 @@ export const getMessages = async (req, res) => {
 
     const totalMessages = await Message.countDocuments({ chatId: chat });
     const totalPages = Math.ceil(totalMessages / limitNumber);
+
+    console.log(totalMessages);
     const decryptedMessages = messages.map((message) => {
       const {
         message: encryptedMessage,

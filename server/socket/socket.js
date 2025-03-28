@@ -50,8 +50,15 @@ const setUpSocket = (server) => {
         return;
       }
 
+      const chat = await Chat.findById(messagePayload.chatId);
+      if (!chat) {
+        console.error("Chat not found");
+        return;
+      }
+
+      // Fetch sender and recipient from DB to get their keys
       const senderUser = await User.findById(messagePayload.sender).select(
-        "_id"
+        "keys activeKeyId"
       );
       if (!senderUser) {
         console.error("Sender not found in database:", messagePayload.sender);
@@ -60,7 +67,7 @@ const setUpSocket = (server) => {
 
       const recipientUser = await User.findById(
         messagePayload.recipient
-      ).select("_id");
+      ).select("keys activeKeyId");
       if (!recipientUser) {
         console.error(
           "Recipient not found in database:",
@@ -69,36 +76,48 @@ const setUpSocket = (server) => {
         return;
       }
 
-      const PRIVATE_KEY_SECRET = process.env.PRIVATE_KEY_SECRET;
-      const senderDecryptedPrivateKey = decryptPrivateKey(
-        messagePayload.senderPvtKey.encryptedPrivateKey,
-        PRIVATE_KEY_SECRET,
-        messagePayload.senderPvtKey.iv,
-        messagePayload.senderPvtKey.salt
+      const senderKey = senderUser.keys.find(
+        (key) => key._id.toString() === senderUser.activeKeyId
       );
+      if (!senderKey) {
+        console.error("Sender's active key not found");
+        return;
+      }
+
+      const recipientKey = recipientUser.keys.find(
+        (key) => key._id.toString() === recipientUser.activeKeyId
+      );
+      if (!recipientKey) {
+        console.error("Recipient's active key not found");
+        return;
+      }
+
+      const PRIVATE_KEY_SECRET = process.env.PRIVATE_KEY_SECRET;
+
+      const senderDecryptedPrivateKey = decryptPrivateKey(
+        senderKey.encryptedPrivateKey,
+        PRIVATE_KEY_SECRET,
+        senderKey.iv,
+        senderKey.salt
+      );
+
       const sharedSecretSender = deriveSharedSecret(
         senderDecryptedPrivateKey,
-        messagePayload.recipientPbcKey.publicKey
+        recipientKey.publicKey
       );
+
       const { encrypted: messageEncrypted, iv: messageIv } = encryptMessage(
         messagePayload.message,
         sharedSecretSender
       );
-
-      const chat = await Chat.findById(messagePayload.chatId);
-
-      if (!chat) {
-        console.error("Chat not found");
-        return;
-      }
 
       const message = new Message({
         message: messageEncrypted,
         iv: messageIv,
         sender: messagePayload.sender,
         recipient: messagePayload.recipient,
-        senderKeyId: messagePayload.senderPvtKey._id,
-        recipientKeyId: messagePayload.recipientPbcKey._id,
+        senderKeyId: senderKey._id,
+        recipientKeyId: recipientKey._id,
         chatId: messagePayload.chatId,
       });
 
@@ -111,9 +130,11 @@ const setUpSocket = (server) => {
       );
 
       let _messagePayload = {
+        _id: message._id,
         message: decryptedMessage,
         sender: messagePayload.sender,
-        recipient: messagePayload.recipient,
+        createdAt: message.createdAt,
+        chatId: messagePayload.chatId,
       };
 
       if (recipientSocketId) {
@@ -235,9 +256,11 @@ const setUpSocket = (server) => {
       );
 
       const responsePayload = {
+        _id: groupMessage._id,
         message: decryptedMessage,
         sender,
         groupId,
+        createdAt: groupMessage.createdAt,
       };
 
       members.forEach((memberId) => {
@@ -309,6 +332,8 @@ const setUpSocket = (server) => {
   const handleAddConnection = async (connection) => {
     const { sender, recipient } = connection;
 
+    const recipientSocketId = userSocketMap.get(recipient);
+    const senderSocketId = userSocketMap.get(sender);
     try {
       if (!sender || !recipient) {
         console.error("Sender or recipient ID is missing");
@@ -316,7 +341,7 @@ const setUpSocket = (server) => {
       }
 
       const senderUser = await User.findById(sender).select(
-        "username avatar _id keys activeKeyId connectedPeoples"
+        "username avatar _id connectedPeoples"
       );
 
       if (!senderUser) {
@@ -325,11 +350,20 @@ const setUpSocket = (server) => {
       }
 
       const recipientUser = await User.findById(recipient).select(
-        "username avatar _id keys activeKeyId connectedPeoples"
+        "username avatar _id connectedPeoples"
       );
 
       if (!recipientUser) {
         console.error("Recipient user not found");
+        return;
+      }
+
+      if (
+        senderUser.connectedPeoples.some(
+          (cp) => cp.userId.toString() === recipient.toString()
+        )
+      ) {
+        console.log("already connected");
         return;
       }
 
@@ -339,74 +373,45 @@ const setUpSocket = (server) => {
 
       await chat.save();
 
-      if (
-        !senderUser.connectedPeoples.some(
-          (cp) => cp.userId.toString() === recipient.toString()
-        )
-      ) {
-        senderUser.connectedPeoples.push({
-          userId: recipient,
-          chatId: chat._id,
-        });
-        await senderUser.save();
-      }
+      senderUser.connectedPeoples.push({
+        userId: recipient,
+        chatId: chat._id,
+      });
+      await senderUser.save();
 
-      if (
-        !recipientUser.connectedPeoples.some(
-          (cp) => cp.userId.toString() === sender.toString()
-        )
-      ) {
-        recipientUser.connectedPeoples.push({
-          userId: sender,
-          chatId: chat._id,
-        });
-        await recipientUser.save();
-      }
+      recipientUser.connectedPeoples.push({
+        userId: sender,
+        chatId: chat._id,
+      });
+      await recipientUser.save();
 
-      const recipientSocketId = userSocketMap.get(recipient);
-      const senderSocketId = userSocketMap.get(sender);
-
-      senderUser.keys = senderUser.keys.map((key) => ({
-        publicKey: key.publicKey,
-        _id: key._id,
-      }));
-
-      recipientUser.keys = recipientUser.keys.map((key) => ({
-        publicKey: key.publicKey,
-        _id: key._id,
-      }));
-
-      const connectionMessage = {
-        sender: {
-          userId: {
-            _id: senderUser._id,
-            username: senderUser.username,
-            avatar: senderUser.avatar,
-            keys: senderUser.keys,
-            activeKeyId: senderUser.activeKeyId,
-          },
-          chatId: chat._id,
-          _id: crypto.randomUUID(),
-        },
-        recipient: {
-          userId: {
+      const connectionMessageS = {
+        _id: chat._id,
+        members: [
+          {
             _id: recipientUser._id,
             username: recipientUser.username,
             avatar: recipientUser.avatar,
-            keys: recipientUser.keys,
-            activeKeyId: recipientUser.activeKeyId,
           },
-          chatId: chat._id,
-          _id: crypto.randomUUID(),
-        },
-        message: "New connection established!",
+        ],
+      };
+
+      const connectionMessageR = {
+        _id: chat._id,
+        members: [
+          {
+            _id: senderUser._id,
+            username: senderUser.username,
+            avatar: senderUser.avatar,
+          },
+        ],
       };
 
       if (recipientSocketId) {
-        io.to(recipientSocketId).emit("connectionUpdated", connectionMessage);
+        io.to(recipientSocketId).emit("connectionUpdated", connectionMessageR);
       }
       if (senderSocketId) {
-        io.to(senderSocketId).emit("connectionUpdated", connectionMessage);
+        io.to(senderSocketId).emit("connectionUpdated", connectionMessageS);
       }
     } catch (error) {
       console.error("Error adding connection:", error);

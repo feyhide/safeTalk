@@ -4,15 +4,76 @@ import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import SearchedContactsList from "./SearchedContactsList";
-import { addChatuser, reset } from "../redux/chatSlice";
-import { appendGroup, resetUser } from "../redux/userSlice";
+import { addChatuser, resetChat } from "../redux/chatSlice";
+import { resetUser } from "../redux/userSlice";
 import { addGroup, resetGroup } from "../redux/groupSlice";
 import { useSocket } from "../context/SocketContext";
 import { DOMAIN } from "../constant/constant.js";
+import axios from "axios";
+import { useIntersection } from "@mantine/hooks";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import {
+  appendGroup,
+  appendOlderGroups,
+  appendOlderPeoples,
+} from "../redux/connectedSlice.js";
 
-const Listing = ({ createFunc, changingFunc, mappingData, type }) => {
+const Listing = ({ createFunc, changingFunc, type }) => {
+  const { currentUser } = useSelector((state) => state.user);
+  const { connectedPeoples, connectedGroups } = useSelector(
+    (state) => state.connections
+  );
+  const dispatch = useDispatch();
+
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: [`listing-${type}`, currentUser._id],
+      queryFn: async ({ pageParam = 1 }) => {
+        let url = `${DOMAIN}api/v1/${
+          type === "friends" ? `chat/get-chat-list` : `group/get-group-list`
+        }?page=${pageParam}`;
+
+        const { data } = await axios.get(url, { withCredentials: true });
+
+        if (data.success) {
+          if (type === "friends") {
+            dispatch(
+              appendOlderPeoples({
+                peoples: data.data,
+                page: pageParam,
+              })
+            );
+          }
+
+          if (type === "groups") {
+            dispatch(
+              appendOlderGroups({
+                groups: data.data,
+                page: pageParam,
+              })
+            );
+          }
+          return data.success ? data : { data: [], totalPages: 1 };
+        }
+      },
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, allPages) => {
+        const nextPage = allPages.length + 1;
+        return nextPage <= lastPage.totalPages ? nextPage : undefined;
+      },
+      enabled: !!currentUser._id,
+    });
+
+  const { ref, entry } = useIntersection({ root: null, threshold: 0.5 });
+
+  useEffect(() => {
+    if (currentUser && entry?.isIntersecting && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [currentUser, entry, hasNextPage, fetchNextPage]);
+
   return (
-    <div className={`px-1 w-full max-h-[45%] py-2 flex flex-col gap-1`}>
+    <div className={`px-1 w-full h-[45%] py-2 flex flex-col gap-1`}>
       <div className="flex w-full min-h-[10%] justify-between items-center">
         <h1 className="font-heading capitalize font-semibold text-lg text-white">
           {type}
@@ -20,46 +81,96 @@ const Listing = ({ createFunc, changingFunc, mappingData, type }) => {
         <img onClick={createFunc} src="/icons/add.png" className="w-6 h-6" />
       </div>
       <div className="max-h-[90%] customScroll overflow-y-auto overflow-x-hidden text-white font-slim w-full">
-        {mappingData.map((data, index) => (
-          <div
-            key={index}
-            className="w-full flex justify-between items-center py-2"
-          >
-            <div
-              onClick={() => changingFunc(data)}
-              className="w-auto flex h-full items-center gap-2"
-            >
-              {type === "groups" ? (
-                <div className="relative flex -space-x-7">
-                  {data.members.slice(0, 4).map((member, index) => (
-                    <img
-                      key={index}
-                      src={member.avatar}
-                      alt="Avatar"
-                      className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
-                      style={{ zIndex: data.members.length + index }}
-                    />
-                  ))}
+        {type === "friends" &&
+          connectedPeoples &&
+          connectedPeoples.map((page, i) =>
+            page.peoples.map((list, index) => {
+              const isLastItem =
+                i === connectedPeoples.length - 1 &&
+                index === page.peoples.length - 1;
+              return (
+                <div
+                  key={list._id}
+                  ref={isLastItem ? ref : null}
+                  className="w-full flex justify-between items-center py-2"
+                >
+                  <div
+                    onClick={() => changingFunc(list)}
+                    className="w-auto flex h-full items-center gap-2"
+                  >
+                    {type === "groups" ? (
+                      <div className="relative flex -space-x-7">
+                        {list.members.slice(0, 4).map((member, idx) => (
+                          <img
+                            key={idx}
+                            src={member.avatar}
+                            alt="Avatar"
+                            className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
+                            style={{ zIndex: list.members.length - idx }}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <img
+                        src={list.members[0]?.avatar}
+                        className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
+                      />
+                    )}
+                    <p>
+                      {type === "friends"
+                        ? list.members[0]?.username
+                        : list.groupName}
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <img
-                  src={data.userId.avatar}
-                  className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
-                />
-              )}
-              <p>
-                {type === "friends" ? data.userId.username : data.groupName}
-              </p>
-            </div>
-            {/* <img
-                      onClick={() => {
-                        setRemoveConnect(people);
-                      }}
-                      className="w-5 h-5"
-                      src="/icons/delete.png"
-                    /> */}
-          </div>
-        ))}
+              );
+            })
+          )}
+        {type === "groups" &&
+          connectedGroups &&
+          connectedGroups.map((page, i) =>
+            page.groups.map((list, index) => {
+              const isLastItem =
+                i === connectedGroups.length - 1 &&
+                index === page.groups.length - 1;
+              return (
+                <div
+                  key={list._id}
+                  ref={isLastItem ? ref : null}
+                  className="w-full flex justify-between items-center py-2"
+                >
+                  <div
+                    onClick={() => changingFunc(list)}
+                    className="w-auto flex h-full items-center gap-2"
+                  >
+                    {type === "groups" ? (
+                      <div className="relative flex -space-x-7">
+                        {list.members.slice(0, 4).map((member, idx) => (
+                          <img
+                            key={idx}
+                            src={member.avatar}
+                            alt="Avatar"
+                            className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
+                            style={{ zIndex: list.members.length - idx }}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <img
+                        src={list.members[0]?.avatar}
+                        className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
+                      />
+                    )}
+                    <p>
+                      {type === "friends"
+                        ? list.members[0]?.username
+                        : list.groupName}
+                    </p>
+                  </div>
+                </div>
+              );
+            })
+          )}
       </div>
     </div>
   );
@@ -104,7 +215,7 @@ const ChatList = ({ setLogOut }) => {
 
       if (res.status === 401 || res.status === 403) {
         console.warn("Session expired. Redirecting to login...");
-        dispatch(reset());
+        dispatch(resetChat());
         dispatch(resetGroup());
         dispatch(resetUser());
         window.location.href = "/";
@@ -136,10 +247,10 @@ const ChatList = ({ setLogOut }) => {
   }, [searchName]);
 
   const handleChangeChatUser = (people) => {
-    if (selectedChat && selectedChat.userId._id === people.userId._id) {
+    if (selectedChat && selectedChat._id === people._id) {
       return;
     }
-    dispatch(reset());
+    dispatch(resetChat());
     dispatch(resetGroup());
     dispatch(addChatuser(people));
   };
@@ -147,7 +258,7 @@ const ChatList = ({ setLogOut }) => {
     if (selectedgroup && selectedgroup._id === group._id) {
       return;
     }
-    dispatch(reset());
+    dispatch(resetChat());
     dispatch(resetGroup());
     dispatch(addGroup(group));
   };
@@ -175,7 +286,7 @@ const ChatList = ({ setLogOut }) => {
       const data = await res.json();
       if (res.status === 401 || res.status === 403) {
         console.warn("Session expired. Redirecting to login...");
-        dispatch(reset());
+        dispatch(resetChat());
         dispatch(resetGroup());
         dispatch(resetUser());
         window.location.href = "/";
@@ -205,6 +316,7 @@ const ChatList = ({ setLogOut }) => {
     });
     setRemoveConnect(null);
   };
+
   return (
     <>
       <Toaster />
@@ -332,13 +444,11 @@ const ChatList = ({ setLogOut }) => {
             </div>
           </div>
           <Listing
-            mappingData={currentUser.connectedPeoples}
             createFunc={() => setSendConnect(true)}
             changingFunc={handleChangeChatUser}
             type={"friends"}
           />
           <Listing
-            mappingData={currentUser.connectedGroups}
             createFunc={() => setCreateGroup(true)}
             changingFunc={handleChangeGroup}
             type={"groups"}

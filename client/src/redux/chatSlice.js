@@ -26,8 +26,10 @@ const chatSlice = createSlice({
           messagePayload &&
           typeof messagePayload === "object" &&
           messagePayload.sender &&
-          messagePayload.recipient &&
-          messagePayload.message
+          messagePayload.message &&
+          messagePayload.createdAt &&
+          messagePayload.chatId &&
+          messagePayload._id
         ) {
           if (state.chatData.length > 0) {
             state.chatData[0].messages.unshift(messagePayload);
@@ -62,7 +64,7 @@ const chatSlice = createSlice({
       }
     },
 
-    reset: (state) => {
+    resetChat: (state) => {
       state.selectedChat = null;
       state.chatData = [];
     },
@@ -73,7 +75,7 @@ const chatSlice = createSlice({
 });
 
 export const {
-  reset,
+  resetChat,
   addChatuser,
   addChatData,
   appendMessage,

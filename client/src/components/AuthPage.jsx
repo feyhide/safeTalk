@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addUser, resetUser } from "../redux/userSlice";
 import { DOMAIN } from "../constant/constant.js";
-import { reset } from "../redux/chatSlice.js";
+import { resetChat } from "../redux/chatSlice.js";
 import { resetGroup } from "../redux/groupSlice.js";
 
 const AuthPage = ({ page, setPageState }) => {
@@ -56,7 +56,7 @@ const AuthPage = ({ page, setPageState }) => {
       const data = await res.json();
       if (res.status === 401 || res.status === 403) {
         console.warn("Session expired. Redirecting to login...");
-        dispatch(reset());
+        dispatch(resetChat());
         dispatch(resetGroup());
         dispatch(resetUser());
         window.location.href = "/";
@@ -135,7 +135,7 @@ const AuthPage = ({ page, setPageState }) => {
       const data = await res.json();
       if (res.status === 401 || res.status === 403) {
         console.warn("Session expired. Redirecting to login...");
-        dispatch(reset());
+        dispatch(resetChat());
         dispatch(resetGroup());
         dispatch(resetUser());
         window.location.href = "/";

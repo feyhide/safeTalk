@@ -4,7 +4,7 @@ import ChatBox from "../components/ChatBox";
 import toast, { Toaster } from "react-hot-toast";
 import { resetUser } from "../redux/userSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { reset } from "../redux/chatSlice.js";
+import { resetChat } from "../redux/chatSlice.js";
 import { resetGroup } from "../redux/groupSlice.js";
 import { DOMAIN } from "../constant/constant.js";
 
@@ -27,14 +27,14 @@ const Chat = () => {
       const data = await res.json();
       if (res.status === 401 || res.status === 403) {
         console.warn("Session expired. Redirecting to login...");
-        dispatch(reset());
+        dispatch(resetChat());
         dispatch(resetGroup());
         dispatch(resetUser());
         window.location.href = "/";
         return;
       }
       if (data.success) {
-        dispatch(reset());
+        dispatch(resetChat());
         dispatch(resetGroup());
         dispatch(resetUser());
         window.location.href = "/";

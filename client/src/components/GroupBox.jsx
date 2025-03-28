@@ -1,20 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  appendOlderMessagesGroup,
-  refreshgroup,
-  resetGroup,
-  updatePageAndTotal,
-} from "../redux/groupSlice.js";
-import { reset } from "../redux/chatSlice.js";
+import { appendOlderMessagesGroup, resetGroup } from "../redux/groupSlice.js";
 import { useSocket } from "../context/SocketContext.jsx";
 import SearchMemberToAdd from "./SearchMemberToAdd.jsx";
 import { DOMAIN } from "../constant/constant.js";
-import { resetUser } from "../redux/userSlice.js";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useIntersection } from "@mantine/hooks";
 import axios from "axios";
+import { formatDayTime } from "../utils/utils.js";
 
 const GroupBox = () => {
   const socket = useSocket();
@@ -98,7 +92,8 @@ const GroupBox = () => {
 
   const handleSendMessage = () => {
     if (selectedgroup && message.trim()) {
-      const memberIds = selectedgroup.members.map((member) => member._id);
+      let memberIds = selectedgroup.members.map((member) => member._id);
+      memberIds.push(currentUser._id);
       socket.emit("sendMessageGroup", {
         sender: currentUser._id,
         members: memberIds,
@@ -116,7 +111,7 @@ const GroupBox = () => {
   return (
     <div className="w-full h-full flex flex-col relative">
       {addMember && <SearchMemberToAdd setAddMember={setAddMember} />}
-      <div className="w-full h-[10svh] text-black p-2 flex items-center justify-center">
+      <div className="w-full h-[10svh] text-black px-2 pt-2 flex items-center justify-center">
         <div className="font-slim relative bg-white flex gap-2 p-2 rounded-xl bg-opacity-90 items-center w-[100%] h-[100%]">
           <img
             onClick={handleCloseGroup}
@@ -166,7 +161,7 @@ const GroupBox = () => {
               return (
                 <div
                   ref={isFirstItem ? ref : null}
-                  key={`index_${index}`}
+                  key={msg._id}
                   className={`flex font-slim gap-2 w-full h-auto ${
                     msg.sender === currentUser._id
                       ? "justify-end"
@@ -195,6 +190,15 @@ const GroupBox = () => {
                     >
                       <p className="w-auto text-sm lg:text-lg break-words whitespace-normal">
                         {msg.message}
+                      </p>
+                      <p
+                        className={`text-[10px] w-full ${
+                          msg.sender === currentUser._id
+                            ? "text-end"
+                            : "text-start"
+                        }`}
+                      >
+                        {formatDayTime(msg.createdAt)}
                       </p>
                     </div>
                   </div>

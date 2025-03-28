@@ -30,7 +30,9 @@ const groupSlice = createSlice({
           typeof messagePayload === "object" &&
           messagePayload.sender &&
           messagePayload.groupId &&
-          messagePayload.message
+          messagePayload.createdAt &&
+          messagePayload.message &&
+          messagePayload._id
         ) {
           if (state.groupData.length > 0) {
             state.groupData[0].messages.unshift(messagePayload);

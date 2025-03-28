@@ -5,7 +5,7 @@ import { useSocket } from "../context/SocketContext.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 import { DOMAIN } from "../constant/constant.js";
-import { reset } from "../redux/chatSlice.js";
+import { resetChat } from "../redux/chatSlice.js";
 import { resetGroup } from "../redux/groupSlice.js";
 import { resetUser } from "../redux/userSlice.js";
 
@@ -43,7 +43,7 @@ const SearchMemberToAdd = ({ setAddMember }) => {
 
       if (res.status === 401 || res.status === 403) {
         console.warn("Session expired. Redirecting to login...");
-        dispatch(reset());
+        dispatch(resetChat());
         dispatch(resetGroup());
         dispatch(resetUser());
         window.location.href = "/";

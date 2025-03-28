@@ -1,15 +1,15 @@
-socket add message in infinite box
-also add that box in redux also dont persist chat and group
+add member
+groupname regex
+username regex
 
 in messagebox 
  - friends
-    .remove friend (chat remove from one side)
-    .re add friend
-    .friend since
+    .delete chat
     .block
     .message time
  - groups
-    .show info about group (info members,member remove, change groupName, since groupcreated)
+    .show info about group (info members, change avatar, change groupName, since groupcreated)
+    .admin , admin add or remove members
     .message time
     .leave group
 

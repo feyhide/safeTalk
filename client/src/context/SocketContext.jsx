@@ -1,16 +1,18 @@
+/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
-import { appendMessage, reset } from "../redux/chatSlice.js";
+import { appendMessage, resetChat } from "../redux/chatSlice.js";
+import { appendMember, appendMessageGroup } from "../redux/groupSlice.js";
+import { HOST } from "../constant/constant.js";
 import {
   appendConnection,
   appendGroup,
   removeConnection,
   updateConnectedGroup,
-} from "../redux/userSlice.js";
-import { appendMember, appendMessageGroup } from "../redux/groupSlice.js";
-import { HOST } from "../constant/constant.js";
+} from "../redux/connectedSlice.js";
 
 const SocketContext = createContext(null);
 
@@ -59,14 +61,9 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (socket.current && currentUser) {
       const isMessageForSelectedChat = (messagePayload) => {
-        return (
-          selectedChat &&
-          ((selectedChat.userId._id === messagePayload.sender &&
-            currentUser._id === messagePayload.recipient) ||
-            (selectedChat.userId._id === messagePayload.recipient &&
-              currentUser._id === messagePayload.sender))
-        );
+        return selectedChat && selectedChat._id === messagePayload.chatId;
       };
+
       const isMessageForSelectedGroup = (messagePayload) => {
         return selectedgroup && selectedgroup._id === messagePayload.groupId;
       };
@@ -85,11 +82,7 @@ export const SocketProvider = ({ children }) => {
 
       const handleConnectionUpdated = (connection) => {
         console.log(connection);
-        if (currentUser._id === connection.sender.userId._id) {
-          dispatch(appendConnection(connection.recipient));
-        } else if (currentUser._id === connection.recipient.userId._id) {
-          dispatch(appendConnection(connection.sender));
-        }
+        dispatch(appendConnection(connection));
       };
 
       const handleMemberAdded = (request) => {
@@ -106,7 +99,7 @@ export const SocketProvider = ({ children }) => {
       const connectionRemoved = (request) => {
         console.log(request);
         if (selectedChat && selectedChat.userId._id === request) {
-          dispatch(reset());
+          dispatch(resetChat());
         }
         dispatch(removeConnection(request));
       };

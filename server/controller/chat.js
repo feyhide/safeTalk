@@ -5,20 +5,11 @@ import {
 } from "../encryption/ecc.js";
 import Chat from "../model/Chat.js";
 import Message from "../model/Message.js";
-import {
-  sendError,
-  sendSuccess,
-  sendValidationError,
-} from "../utils/response.js";
-import {
-  validateGroupName,
-  validateMongodbId,
-} from "../utils/validation/auth_validator.js";
+import { sendError, sendSuccess } from "../utils/response.js";
 import dotenv from "dotenv";
 import User from "../model/user.js";
 import GroupMessage from "../model/GroupMessage.js";
 import Group from "../model/Group.js";
-import crypto from "crypto";
 dotenv.config();
 
 const PRIVATE_KEY_SECRET = process.env.PRIVATE_KEY_SECRET;
@@ -66,7 +57,6 @@ export const getMessages = async (req, res) => {
         message: encryptedMessage,
         iv,
         sender,
-        recipient,
         senderKeyId,
         recipientKeyId,
       } = message;
@@ -101,7 +91,13 @@ export const getMessages = async (req, res) => {
             iv
           );
 
-          return { ...message._doc, message: decryptedMessage };
+          return {
+            _id: message._id,
+            message: decryptedMessage,
+            sender: sender,
+            chatId: message.chatId,
+            createdAt: message.createdAt,
+          };
         } else {
           const senderKey = otherUserFullKeys.keys.find(
             (key) => key._id.toString() === senderKeyId
@@ -131,7 +127,13 @@ export const getMessages = async (req, res) => {
             iv
           );
 
-          return { ...message._doc, message: decryptedMessage };
+          return {
+            _id: message._id,
+            message: decryptedMessage,
+            sender: sender,
+            chatId: message.chatId,
+            createdAt: message.createdAt,
+          };
         }
       } catch (decryptionError) {
         console.error(`Failed to decrypt message: ${decryptionError.message}`);
@@ -214,9 +216,10 @@ export const getGroupMessages = async (req, res) => {
             );
 
             return {
+              _id: message._id,
               message: decryptedMessage,
               sender: sender._id,
-              group: message.group,
+              groupId: message.groupId,
               createdAt: message.createdAt,
             };
           }
@@ -243,5 +246,58 @@ export const getGroupMessages = async (req, res) => {
       null,
       500
     );
+  }
+};
+
+export const getChatInfo = async (req, res) => {
+  try {
+    const { chatId } = req.query;
+
+    const chat = await Chat.findById(chatId)
+      .populate("members", "username avatar")
+      .lean();
+
+    return sendSuccess(res, "fetched chat info successfully", chat, 200);
+  } catch (error) {
+    console.log(error);
+    return sendError(res, "error fetching chat info", null, 500);
+  }
+};
+
+export const getChatList = async (req, res) => {
+  try {
+    const { page = 1, limit = 5 } = req.query;
+    const parsedPage = parseInt(page, 10);
+    const parsedLimit = parseInt(limit, 10);
+
+    const chats = await Chat.find({ members: req.userId })
+      .populate({
+        path: "members",
+        select: "_id username avatar",
+      })
+      .sort({ updatedAt: -1 })
+      .skip((parsedPage - 1) * parsedLimit)
+      .limit(parsedLimit);
+
+    const chatList = chats.map((chat) => ({
+      _id: chat._id,
+      members: chat.members.filter(
+        (member) => member._id.toString() !== req.userId
+      ),
+    }));
+
+    const totalChats = await Chat.countDocuments({ members: req.userId });
+    const totalPages = Math.ceil(totalChats / parsedLimit);
+
+    return res.status(200).json({
+      success: true,
+      data: chatList,
+      totalChats,
+      totalPages,
+      currentPage: parsedPage,
+    });
+  } catch (error) {
+    console.error("Error fetching chat list:", error);
+    return sendError(res, "Error fetching chat list", null, 500);
   }
 };

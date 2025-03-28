@@ -4,6 +4,7 @@ import storage from "redux-persist/lib/storage";
 import userReducer from "./userSlice.js";
 import chatReducer from "./chatSlice.js";
 import groupReducer from "./groupSlice.js";
+import connectedReducer from "./connectedSlice.js";
 
 const persistConfig = {
   key: "root",
@@ -15,6 +16,7 @@ const rootReducer = combineReducers({
   user: persistReducer(persistConfig, userReducer),
   chat: chatReducer,
   group: groupReducer,
+  connections: connectedReducer,
 });
 
 export const store = configureStore({

@@ -73,9 +73,11 @@ const Listing = ({ createFunc, changingFunc, type }) => {
   }, [currentUser, entry, hasNextPage, fetchNextPage]);
 
   return (
-    <div className={`px-1 w-full h-[45%] py-2 flex flex-col gap-1`}>
-      <div className="flex w-full min-h-[10%] justify-between items-center">
-        <h1 className="font-heading capitalize font-semibold text-lg text-white">
+    <div
+      className={`px-2 bg-white/20 rounded-xl py-1 shadow-md w-full h-[42%] flex flex-col `}
+    >
+      <div className="flex w-full px-2 min-h-[10%] justify-between items-center">
+        <h1 className="font-heading w-full capitalize font-semibold text-lg text-white">
           {type}
         </h1>
         <img onClick={createFunc} src="/icons/add.png" className="w-6 h-6" />
@@ -96,30 +98,14 @@ const Listing = ({ createFunc, changingFunc, type }) => {
                 >
                   <div
                     onClick={() => changingFunc(list)}
-                    className="w-auto flex h-full items-center gap-2"
+                    className="w-auto flex h-full items-center"
                   >
-                    {type === "groups" ? (
-                      <div className="relative flex -space-x-7">
-                        {list.members.slice(0, 4).map((member, idx) => (
-                          <img
-                            key={idx}
-                            src={member.avatar}
-                            alt="Avatar"
-                            className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
-                            style={{ zIndex: list.members.length - idx }}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <img
-                        src={list.members[0]?.avatar}
-                        className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
-                      />
-                    )}
-                    <p>
-                      {type === "friends"
-                        ? list.members[0]?.username
-                        : list.groupName}
+                    <img
+                      src={list.members[0]?.avatar}
+                      className="z-10 w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
+                    />
+                    <p className="bg-blue-400 rounded-r-xl shadow-md -ml-1 px-2">
+                      {list.members[0]?.username}
                     </p>
                   </div>
                 </div>
@@ -141,30 +127,21 @@ const Listing = ({ createFunc, changingFunc, type }) => {
                 >
                   <div
                     onClick={() => changingFunc(list)}
-                    className="w-auto flex h-full items-center gap-2"
+                    className="w-auto flex h-full items-center"
                   >
-                    {type === "groups" ? (
-                      <div className="relative flex -space-x-7">
-                        {list.members.slice(0, 4).map((member, idx) => (
-                          <img
-                            key={idx}
-                            src={member.avatar}
-                            alt="Avatar"
-                            className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
-                            style={{ zIndex: list.members.length - idx }}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <img
-                        src={list.members[0]?.avatar}
-                        className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
-                      />
-                    )}
-                    <p>
-                      {type === "friends"
-                        ? list.members[0]?.username
-                        : list.groupName}
+                    <div className="relative flex -space-x-7 z-10">
+                      {list.members.slice(0, 4).map((member, idx) => (
+                        <img
+                          key={idx}
+                          src={member.avatar}
+                          alt="Avatar"
+                          className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
+                          style={{ zIndex: list.members.length - idx }}
+                        />
+                      ))}
+                    </div>
+                    <p className="bg-blue-400 rounded-r-xl shadow-md -ml-1 px-2">
+                      {list.groupName}
                     </p>
                   </div>
                 </div>
@@ -423,18 +400,20 @@ const ChatList = ({ setLogOut }) => {
             </div>
           </div>
         )}
-        <div className="w-[90vw] flex flex-col lg:w-[90%] h-[95%] rounded-xl bg-blue-400 bg-opacity-90">
+        <div className="w-[90vw] items-center justify-center px-1 gap-2 flex flex-col lg:w-[90%] h-[95%] rounded-xl bg-blue-400 bg-opacity-90">
           <div className="w-full h-[10%] p-2 gap-2 flex flex-col items-center justify-center">
             <h1 className="font-heading font-bold text-3xl text-white">
               SafeTalk
             </h1>
             <div className="font-slim text-white flex justify-between w-full items-center">
-              <div className="flex gap-2 items-center w-auto">
+              <div className="flex items-center w-auto">
                 <img
                   src={currentUser?.avatar}
-                  className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
+                  className="w-8 h-8 z-10 bg-white rounded-full border-2"
                 />
-                <p className="text-base">{currentUser?.username}</p>
+                <p className="bg-white text-black rounded-r-xl shadow-md -ml-1 px-2">
+                  {currentUser?.username}
+                </p>
               </div>
               <img
                 onClick={() => setLogOut(true)}

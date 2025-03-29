@@ -9,10 +9,12 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useIntersection } from "@mantine/hooks";
 import axios from "axios";
 import { formatDayTime } from "../utils/utils.js";
+import GroupInfo from "./GroupInfo.jsx";
 
 const GroupBox = () => {
   const socket = useSocket();
 
+  const [groupInfo, setGroupInfo] = useState(false);
   const { selectedgroup, groupData } = useSelector((state) => state.group);
   const [addMember, setAddMember] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
@@ -107,31 +109,44 @@ const GroupBox = () => {
     dispatch(resetGroup());
   };
 
-  return (
+  return groupInfo ? (
+    <GroupInfo
+      hideFunc={setGroupInfo}
+      groupId={selectedgroup?._id}
+      currentUser={currentUser}
+    />
+  ) : (
     <div className="w-full h-full flex flex-col relative">
       {addMember && <SearchMemberToAdd setAddMember={setAddMember} />}
       <div className="w-full h-[10svh] text-black px-2 pt-2 flex items-center justify-center">
-        <div className="font-slim relative bg-white flex gap-2 p-2 rounded-xl bg-opacity-90 items-center w-[100%] h-[100%]">
+        <div className="font-slim relative bg-white/20 flex gap-2 p-2 rounded-xl bg-opacity-90 items-center w-[100%] h-[100%]">
           <img
             onClick={handleCloseGroup}
             src="/icons/back.png"
             className="flex lg:hidden w-8 h-8"
           />
-          <div className="relative flex -space-x-7">
-            {selectedgroup &&
-              selectedgroup.members
-                .slice(0, 4)
-                .map((member, index) => (
-                  <img
-                    key={index}
-                    src={member.avatar}
-                    alt="Avatar"
-                    className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
-                    style={{ zIndex: selectedgroup.members.length + index }}
-                  />
-                ))}
+          <div
+            onClick={() => setGroupInfo(true)}
+            className="flex items-center justify-center text-white"
+          >
+            <div className="relative flex -space-x-7 z-10">
+              {selectedgroup &&
+                selectedgroup.members
+                  .slice(0, 4)
+                  .map((member, index) => (
+                    <img
+                      key={index}
+                      src={member.avatar}
+                      alt="Avatar"
+                      className=" w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
+                      style={{ zIndex: selectedgroup.members.length + index }}
+                    />
+                  ))}
+            </div>
+            <p className="bg-blue-400 rounded-r-xl shadow-md -ml-1 px-2">
+              {selectedgroup.groupName}
+            </p>
           </div>
-          <p className="text-base">{selectedgroup.groupName}</p>
           <img
             onClick={() => setAddMember(true)}
             src="/icons/addblack.png"

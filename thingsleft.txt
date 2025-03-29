@@ -5,7 +5,7 @@ in messagebox
     .if chat has no members (all members leave then delete chat)
     .block
  - groups
-    .show info about group (info members, change avatar, change groupName, since groupcreated)
+    .(change groupName)
     .admin , admin add or remove members
     .leave group
     .admin delete group

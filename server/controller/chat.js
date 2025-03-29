@@ -257,6 +257,7 @@ export const getChatInfo = async (req, res) => {
       .populate("members", "username avatar")
       .lean();
 
+    console.log(chat);
     return sendSuccess(res, "fetched chat info successfully", chat, 200);
   } catch (error) {
     console.log(error);
@@ -288,7 +289,7 @@ export const getChatList = async (req, res) => {
 
     const totalChats = await Chat.countDocuments({ members: req.userId });
     const totalPages = Math.ceil(totalChats / parsedLimit);
-
+    console.log("fetched Chats", chatList);
     return res.status(200).json({
       success: true,
       data: chatList,

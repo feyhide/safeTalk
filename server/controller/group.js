@@ -69,6 +69,7 @@ export const getGroupList = async (req, res) => {
 
     const totalGroups = await Group.countDocuments({ members: req.userId });
     const totalPages = Math.ceil(totalGroups / parsedLimit);
+    console.log("fetched Groups", groups);
 
     return res.status(200).json({
       success: true,
@@ -80,5 +81,21 @@ export const getGroupList = async (req, res) => {
   } catch (error) {
     console.error("Error fetching group list:", error);
     return sendError(res, "Error fetching group list", null, 500);
+  }
+};
+
+export const getGroupInfo = async (req, res) => {
+  try {
+    const { groupId } = req.query;
+
+    const group = await Group.findById(groupId)
+      .populate("members", "_id username avatar")
+      .lean();
+
+    console.log(group);
+    return sendSuccess(res, "fetched group info successfully", group, 200);
+  } catch (error) {
+    console.log(error);
+    return sendError(res, "error fetching group info", null, 500);
   }
 };

@@ -124,7 +124,7 @@ const MessageBox = () => {
       ) : (
         <div className="w-full h-full flex flex-col relative">
           <div className="w-full h-auto text-black px-2 pt-2 flex items-center justify-center">
-            <div className="font-slim bg-white flex gap-2 p-2 rounded-xl bg-opacity-90 items-center w-[100%] h-[8vh]">
+            <div className="font-slim bg-white/20 flex gap-2 p-2 rounded-xl bg-opacity-90 items-center w-[100%] h-[8vh]">
               <img
                 onClick={handleCloseChat}
                 src="/icons/back.png"
@@ -132,13 +132,15 @@ const MessageBox = () => {
               />
               <div
                 onClick={() => setChatInfo(true)}
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center text-white"
               >
                 <img
                   src={selectedChat.members[0].avatar}
-                  className="w-8 h-8 rounded-full bg-black bg-opacity-50 border-2"
+                  className="w-8 h-8 rounded-full z-10 bg-black bg-opacity-50 border-2"
                 />
-                <p className="text-base">{selectedChat.members[0].username}</p>
+                <p className="bg-blue-400 rounded-r-xl shadow-md -ml-1 px-2">
+                  {selectedChat.members[0].username}
+                </p>
               </div>
             </div>
           </div>

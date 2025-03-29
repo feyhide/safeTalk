@@ -363,32 +363,23 @@ const setUpSocket = (server) => {
         return;
       }
 
-      if (
-        senderUser.connectedPeoples.some(
-          (cp) => cp.userId.toString() === recipient.toString()
-        )
-      ) {
-        console.log("already connected");
-        return;
+      let chat;
+
+      const existingChat = await Chat.findOne({
+        members: { $all: [recipient, sender] },
+      });
+
+      if (existingChat) {
+        chat = existingChat;
+      } else {
+        const newChat = new Chat({
+          members: [recipient, sender],
+        });
+
+        await newChat.save();
+
+        chat = newChat;
       }
-
-      const chat = new Chat({
-        members: [recipient, sender],
-      });
-
-      await chat.save();
-
-      senderUser.connectedPeoples.push({
-        userId: recipient,
-        chatId: chat._id,
-      });
-      await senderUser.save();
-
-      recipientUser.connectedPeoples.push({
-        userId: sender,
-        chatId: chat._id,
-      });
-      await recipientUser.save();
 
       const connectionMessageS = {
         _id: chat._id,
@@ -423,53 +414,93 @@ const setUpSocket = (server) => {
     }
   };
 
-  const handleremoveConnection = async (request) => {
+  const handleRemoveFriend = async (request) => {
     try {
-      const senderUser = await User.findById(request.sender).select(
-        "connectedPeoples"
-      );
+      const senderSocketId = userSocketMap.get(request.sender);
+      const senderUser = await User.findById(request.sender);
+
       if (!senderUser) {
         console.error("Sender user not found");
         return;
       }
 
-      const recipientUser = await User.findById(request.recipient).select(
-        "connectedPeoples"
-      );
-      if (!recipientUser) {
-        console.error("Recipient user not found");
+      const chat = await Chat.findById(request.chatId);
+      if (!chat) {
+        console.error("Chat not found");
         return;
       }
 
-      senderUser.connectedPeoples = senderUser.connectedPeoples.filter(
-        (connection) => connection.userId.toString() !== request.recipient
+      if (chat.members.length === 1) {
+        await Message.deleteMany({ chatId: chat._id });
+        await Chat.findByIdAndDelete(chat._id);
+
+        const responseData = {
+          status: "chatRemoved",
+          chatId: chat._id,
+        };
+
+        if (senderSocketId) {
+          io.to(senderSocketId).emit("connectionRemoved", responseData);
+        }
+        return;
+      }
+
+      chat.members = chat.members.filter(
+        (member) => member.toString() !== request.sender
       );
+      chat.pastMembers.push(request.sender);
+      await chat.save();
 
-      recipientUser.connectedPeoples = recipientUser.connectedPeoples.filter(
-        (connection) => connection.userId.toString() !== request.sender
-      );
+      const recipientSocketId = userSocketMap.get(chat.members[0].toString());
 
-      await senderUser.save();
-      await recipientUser.save();
+      const updatedChat = await Chat.findById(chat._id)
+        .select("_id members pastMembers")
+        .populate({
+          path: "members",
+          select: "_id username avatar",
+        })
+        .populate({
+          path: "pastMembers",
+          select: "_id username avatar",
+        });
 
-      const chat = await Chat.findOne({
-        members: { $all: [request.sender, request.recipient] },
+      const filteredMembersForSender = updatedChat.members.filter((member) => {
+        return member._id.toString() !== request.sender;
       });
 
-      if (chat) {
-        await Message.deleteMany({ chatId: chat._id });
-        await Chat.deleteMany({ _id: chat._id });
-      }
+      const filteredMembersForRecipient = updatedChat.members.filter(
+        (member) => {
+          return member._id.toString() !== chat.members[0].toString();
+        }
+      );
 
-      const recipientSocketId = userSocketMap.get(request.recipient);
-      const senderSocketId = userSocketMap.get(request.sender);
+      const SresponseData = {
+        status: "memberLeaved",
+        memberLeaved: request.sender,
+        data: {
+          _id: updatedChat._id,
+          members: filteredMembersForSender,
+          pastMembers: updatedChat.pastMembers,
+        },
+      };
 
-      if (recipientSocketId) {
-        io.to(recipientSocketId).emit("connectionRemoved", request.sender);
-      }
+      const RresponseData = {
+        status: "memberLeaved",
+        memberLeaved: request.sender,
+        data: {
+          _id: updatedChat._id,
+          members: filteredMembersForRecipient,
+          pastMembers: updatedChat.pastMembers,
+        },
+      };
+      console.log("res R", { RresponseData });
+      console.log("res S", { SresponseData });
 
       if (senderSocketId) {
-        io.to(senderSocketId).emit("connectionRemoved", request.recipient);
+        io.to(senderSocketId).emit("connectionRemoved", SresponseData);
+      }
+      if (recipientSocketId) {
+        io.to(recipientSocketId).emit("connectionRemoved", RresponseData);
       }
     } catch (error) {
       console.error("Error handling connection removal:", error.message);
@@ -485,7 +516,7 @@ const setUpSocket = (server) => {
       console.log("User id is not provided during connection");
     }
 
-    socket.on("removeConnection", handleremoveConnection);
+    socket.on("removeFriend", handleRemoveFriend);
     socket.on("sendConnection", handleAddConnection);
     socket.on("addMemberToGroup", handleAddMemberToGroup);
     socket.on("sendMessageGroup", sendMessageGroup);

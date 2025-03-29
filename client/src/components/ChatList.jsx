@@ -100,13 +100,27 @@ const Listing = ({ createFunc, changingFunc, type }) => {
                     onClick={() => changingFunc(list)}
                     className="w-auto flex h-full items-center"
                   >
-                    <img
-                      src={list.members[0]?.avatar}
-                      className="z-10 w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
-                    />
-                    <p className="bg-blue-400 rounded-r-xl shadow-md -ml-1 px-2">
-                      {list.members[0]?.username}
-                    </p>
+                    {list.members.length === 1 ? (
+                      <>
+                        <img
+                          src={list.members[0]?.avatar}
+                          className="z-10 w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
+                        />
+                        <p className="bg-blue-400 rounded-r-xl shadow-md -ml-1 px-2">
+                          {list.members[0]?.username}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <img
+                          src={list.pastMembers[0]?.avatar}
+                          className="z-10 w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
+                        />
+                        <p className="bg-blue-400 rounded-r-xl shadow-md -ml-1 px-2">
+                          {list.pastMembers[0]?.username}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
               );

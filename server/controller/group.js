@@ -69,7 +69,6 @@ export const getGroupList = async (req, res) => {
 
     const totalGroups = await Group.countDocuments({ members: req.userId });
     const totalPages = Math.ceil(totalGroups / parsedLimit);
-    console.log("fetched Groups", groups);
 
     return res.status(200).json({
       success: true,

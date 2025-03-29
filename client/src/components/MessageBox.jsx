@@ -49,6 +49,8 @@ const MessageBox = () => {
             })
           );
           return data.success ? data : { data: [], totalPages: 1 };
+        } else {
+          console.log(data.message);
         }
       },
       initialPageParam: 1,
@@ -56,7 +58,7 @@ const MessageBox = () => {
         const nextPage = allPages.length + 1;
         return nextPage <= lastPage.totalPages ? nextPage : undefined;
       },
-      enabled: !!selectedChat._id,
+      enabled: !!selectedChat._id && selectedChat.members.length > 0,
     });
 
   const { ref, entry } = useIntersection({ root: null, threshold: 1 });
@@ -135,11 +137,15 @@ const MessageBox = () => {
                 className="flex items-center justify-center text-white"
               >
                 <img
-                  src={selectedChat.members[0].avatar}
+                  src={
+                    selectedChat.members?.[0]?.avatar ||
+                    selectedChat.pastMembers?.[0]?.avatar
+                  }
                   className="w-8 h-8 rounded-full z-10 bg-black bg-opacity-50 border-2"
                 />
                 <p className="bg-blue-400 rounded-r-xl shadow-md -ml-1 px-2">
-                  {selectedChat.members[0].username}
+                  {selectedChat.members?.[0]?.username ||
+                    selectedChat.pastMembers?.[0]?.username}
                 </p>
               </div>
             </div>
@@ -149,91 +155,108 @@ const MessageBox = () => {
               ref={chatContainerRef}
               className="w-full overflow-y-auto overflow-x-hidden customScroll px-2 h-[77svh]"
             >
-              {isFetchingNextPage && (
-                <div className="text-center text-white text-sm mb-2">
-                  Fetching more...
+              {selectedChat.members.length > 0 ? (
+                <>
+                  {isFetchingNextPage && (
+                    <div className="text-center text-white text-sm mb-2">
+                      Fetching more...
+                    </div>
+                  )}
+                  {chatData
+                    .flatMap((group) => group.messages)
+                    .reverse()
+                    .map((msg, index) => {
+                      const isFirstItem = index === 0;
+                      return (
+                        <div
+                          key={msg._id}
+                          ref={isFirstItem ? ref : null}
+                          className={`flex items-center gap-2 w-full h-auto ${
+                            msg.sender === currentUser._id
+                              ? "justify-end"
+                              : "justify-start"
+                          } mb-4`}
+                        >
+                          {msg.sender !== currentUser._id && (
+                            <img
+                              src={selectedChat.members[0].avatar}
+                              className="h-8 rounded-full bg-black bg-opacity-50 border-2"
+                            />
+                          )}
+                          <div
+                            className={`max-w-[50%] lg:max-w-1/2 p-2 rounded-lg ${
+                              msg.sender === currentUser._id
+                                ? "bg-white text-black bg-opacity-50"
+                                : "bg-white"
+                            }`}
+                          >
+                            <p className="w-auto text-sm break-words font-slim whitespace-normal">
+                              {msg.message}
+                            </p>
+                            <p
+                              className={`text-[10px] w-full ${
+                                msg.sender === currentUser._id
+                                  ? "text-end"
+                                  : "text-start"
+                              }`}
+                            >
+                              {formatDayTime(msg.createdAt)}
+                            </p>
+                          </div>
+                          {msg.sender === currentUser._id && (
+                            <img
+                              src={currentUser.avatar}
+                              className="h-8 rounded-full bg-black bg-opacity-50 border-2"
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                </>
+              ) : (
+                <div className="w-full text-white text-center text-sm h-full items-center justify-center flex flex-col">
+                  <p>
+                    {selectedChat.pastMembers?.[0]?.username} has unfriended
+                    you. To continue the conversation, click the button below.
+                  </p>
                 </div>
               )}
-              {chatData
-                .flatMap((group) => group.messages)
-                .reverse()
-                .map((msg, index) => {
-                  const isFirstItem = index === 0;
-                  return (
-                    <div
-                      key={msg._id}
-                      ref={isFirstItem ? ref : null}
-                      className={`flex items-center gap-2 w-full h-auto ${
-                        msg.sender === currentUser._id
-                          ? "justify-end"
-                          : "justify-start"
-                      } mb-4`}
-                    >
-                      {msg.sender !== currentUser._id && (
-                        <img
-                          src={selectedChat.members[0].avatar}
-                          className="h-8 rounded-full bg-black bg-opacity-50 border-2"
-                        />
-                      )}
-                      <div
-                        className={`max-w-[50%] lg:max-w-1/2 p-2 rounded-lg ${
-                          msg.sender === currentUser._id
-                            ? "bg-white text-black bg-opacity-50"
-                            : "bg-white"
-                        }`}
-                      >
-                        <p className="w-auto text-sm break-words font-slim whitespace-normal">
-                          {msg.message}
-                        </p>
-                        <p
-                          className={`text-[10px] w-full ${
-                            msg.sender === currentUser._id
-                              ? "text-end"
-                              : "text-start"
-                          }`}
-                        >
-                          {formatDayTime(msg.createdAt)}
-                        </p>
-                      </div>
-                      {msg.sender === currentUser._id && (
-                        <img
-                          src={currentUser.avatar}
-                          className="h-8 rounded-full bg-black bg-opacity-50 border-2"
-                        />
-                      )}
-                    </div>
-                  );
-                })}
             </div>
           </div>
-          <div className="w-full min-h-[10svh] h-auto flex items-center absolute bottom-0 p-2">
-            <div className="font-slim bg-white rounded-xl text-white flex justify-between gap-2 items-center w-full h-full">
-              <textarea
-                onChange={(e) => setMessage(e.target.value)}
-                value={message}
-                placeholder="Message"
-                className="w-[90%] text-black p-2 outline-none bg-transparent resize-none"
-                style={{
-                  minHeight: "100%",
-                  maxHeight: "20svh",
-                  overflowY: "auto",
-                }}
-                onInput={(e) => {
-                  e.target.style.height = "auto";
-                  e.target.style.height = `${Math.min(
-                    e.target.scrollHeight,
-                    e.target.offsetHeight + 150
-                  )}px`;
-                }}
-              />
-              <div className="w-[10%] flex items-center justify-center">
-                <img
-                  onClick={handleSendMessage}
-                  src="/icons/send.png"
-                  className="w-8 h-8"
+          <div className="w-full min-h-[10svh] h-auto flex items-center justify-center absolute bottom-0 p-2">
+            {selectedChat?.members?.length !== 0 ? (
+              <div className="font-slim bg-white rounded-xl text-white flex justify-between gap-2 items-center w-full h-full">
+                <textarea
+                  onChange={(e) => setMessage(e.target.value)}
+                  value={message}
+                  placeholder="Message"
+                  className="w-[90%] text-black p-2 outline-none bg-transparent resize-none"
+                  style={{
+                    minHeight: "100%",
+                    maxHeight: "20svh",
+                    overflowY: "auto",
+                  }}
+                  onInput={(e) => {
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${Math.min(
+                      e.target.scrollHeight,
+                      e.target.offsetHeight + 150
+                    )}px`;
+                  }}
                 />
+                <div className="w-[10%] flex items-center justify-center">
+                  <img
+                    onClick={handleSendMessage}
+                    src="/icons/send.png"
+                    className="w-8 h-8"
+                  />
+                </div>
               </div>
-            </div>
+            ) : (
+              <button className="bg-green-600 text-white p-2 rounded-xl">
+                ReAdd
+              </button>
+            )}
           </div>
         </div>
       )}

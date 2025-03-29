@@ -114,7 +114,7 @@ const connectedSlice = createSlice({
 
       let groupFound = false;
 
-      state.connectedGroups.forEach((groupPage) => {
+      for (const groupPage of state.connectedGroups) {
         const groupIndex = groupPage.groups.findIndex(
           (g) => g._id === request.groupId
         );
@@ -122,8 +122,9 @@ const connectedSlice = createSlice({
         if (groupIndex !== -1) {
           groupPage.groups[groupIndex] = request.updatedGroup;
           groupFound = true;
+          break;
         }
-      });
+      }
 
       if (!groupFound) {
         if (state.connectedGroups.length > 0) {
@@ -136,10 +137,40 @@ const connectedSlice = createSlice({
         }
       }
     },
-    removeConnection: (state, action) => {
-      state.connectedPeoples = state.connectedPeoples.filter(
-        (connection) => connection.userId._id !== action.payload
-      );
+    updateConnectedPeople: (state, action) => {
+      if (!state.connectedPeoples) {
+        state.connectedPeoples = [];
+      }
+
+      const request = action.payload;
+      if (!request || !request.updatedChat) {
+        console.error("Invalid payload:", action.payload);
+        return;
+      }
+
+      for (const page of state.connectedPeoples) {
+        const peopleIndex = page.peoples.findIndex(
+          (p) => p._id === request.updatedChat._id
+        );
+
+        if (peopleIndex !== -1) {
+          page.peoples[peopleIndex] = request.updatedChat;
+          break;
+        }
+      }
+    },
+    removeFromConnectedPeople: (state, action) => {
+      const request = action.payload;
+
+      for (const page of state.connectedPeoples) {
+        const peopleIndex = page.peoples.findIndex(
+          (p) => p._id === request.chatId
+        );
+        if (peopleIndex !== -1) {
+          page.peoples.splice(peopleIndex, 1);
+          break;
+        }
+      }
     },
   },
 });
@@ -147,8 +178,9 @@ const connectedSlice = createSlice({
 export const {
   appendGroup,
   appendConnection,
+  updateConnectedPeople,
   updateConnectedGroup,
-  removeConnection,
+  removeFromConnectedPeople,
   appendOlderGroups,
   appendOlderPeoples,
 } = connectedSlice.actions;

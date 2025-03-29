@@ -71,10 +71,20 @@ const chatSlice = createSlice({
     refreshChat: (state) => {
       state.chatData = [];
     },
+    updateSelectedChat: (state, action) => {
+      if (!state.selectedChat) return;
+
+      const request = action.payload;
+
+      if (state.selectedChat._id === request._id) {
+        state.selectedChat = request;
+      }
+    },
   },
 });
 
 export const {
+  updateSelectedChat,
   resetChat,
   addChatuser,
   addChatData,

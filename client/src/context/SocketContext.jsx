@@ -4,13 +4,18 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
-import { appendMessage, resetChat } from "../redux/chatSlice.js";
+import {
+  appendMessage,
+  resetChat,
+  updateSelectedChat,
+} from "../redux/chatSlice.js";
 import { appendMember, appendMessageGroup } from "../redux/groupSlice.js";
 import { HOST } from "../constant/constant.js";
 import {
   appendConnection,
-  removeConnection,
+  removeFromConnectedPeople,
   updateConnectedGroup,
+  updateConnectedPeople,
 } from "../redux/connectedSlice.js";
 
 const SocketContext = createContext(null);
@@ -94,10 +99,39 @@ export const SocketProvider = ({ children }) => {
 
       const connectionRemoved = (request) => {
         console.log(request);
-        if (selectedChat && selectedChat.userId._id === request) {
-          dispatch(resetChat());
+
+        switch (request.status) {
+          case "chatRemoved":
+            if (selectedChat && selectedChat._id === request.chatId) {
+              dispatch(resetChat());
+            }
+            dispatch(removeFromConnectedPeople({ chatId: request.chatId }));
+            break;
+          case "memberLeaved":
+            if (currentUser._id === request.memberLeaved) {
+              console.log("i leaved");
+              if (selectedChat && selectedChat._id === request.data._id) {
+                dispatch(resetChat());
+              }
+              dispatch(
+                removeFromConnectedPeople({
+                  chatId: request.data._id,
+                })
+              );
+            } else {
+              console.log("i dont leaved");
+              if (selectedChat && selectedChat._id === request.data._id) {
+                dispatch(updateSelectedChat(request.data));
+              }
+              dispatch(updateConnectedPeople({ updatedChat: request.data }));
+            }
+            break;
+
+          default:
+            break;
         }
-        dispatch(removeConnection(request));
+
+        //dispatch(removeConnection(request));
       };
 
       socket.current.on("connectionRemoved", connectionRemoved);

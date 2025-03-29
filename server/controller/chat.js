@@ -255,9 +255,9 @@ export const getChatInfo = async (req, res) => {
 
     const chat = await Chat.findById(chatId)
       .populate("members", "username avatar")
+      .populate("pastMembers", "username avatar")
       .lean();
 
-    console.log(chat);
     return sendSuccess(res, "fetched chat info successfully", chat, 200);
   } catch (error) {
     console.log(error);
@@ -276,6 +276,10 @@ export const getChatList = async (req, res) => {
         path: "members",
         select: "_id username avatar",
       })
+      .populate({
+        path: "pastMembers",
+        select: "_id username avatar",
+      })
       .sort({ updatedAt: -1 })
       .skip((parsedPage - 1) * parsedLimit)
       .limit(parsedLimit);
@@ -285,11 +289,11 @@ export const getChatList = async (req, res) => {
       members: chat.members.filter(
         (member) => member._id.toString() !== req.userId
       ),
+      pastMembers: chat.pastMembers,
     }));
 
     const totalChats = await Chat.countDocuments({ members: req.userId });
     const totalPages = Math.ceil(totalChats / parsedLimit);
-    console.log("fetched Chats", chatList);
     return res.status(200).json({
       success: true,
       data: chatList,

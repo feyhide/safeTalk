@@ -4,11 +4,13 @@ import axios from "axios";
 import { DOMAIN } from "../constant/constant";
 import { useEffect, useState } from "react";
 import { formatDate } from "../utils/utils";
+import { useSocket } from "../context/SocketContext";
 
 const ChatInfo = ({ chatId, currentUser, hideFunc }) => {
   const [chatInfo, setChatInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const socket = useSocket();
 
   const fetchChatInfo = async () => {
     setLoading(true);
@@ -36,6 +38,13 @@ const ChatInfo = ({ chatId, currentUser, hideFunc }) => {
     if (chatId) fetchChatInfo();
   }, [chatId]);
 
+  const handleRemoveFriend = () => {
+    socket.emit("removeFriend", {
+      sender: currentUser._id,
+      chatId: chatId,
+    });
+  };
+
   return (
     <div className="w-full h-full font-slim  text-white flex p-2 flex-col items-center justify-center relative">
       {loading ? (
@@ -51,8 +60,9 @@ const ChatInfo = ({ chatId, currentUser, hideFunc }) => {
               className="w-8 h-8"
             />
           </div>
-          <div className="w-full h-[80%] text-md flex flex-col items-center justify-center">
+          <div className="w-full h-[80%] gap-2 text-md flex flex-col items-center justify-center">
             {chatInfo &&
+              chatInfo.members.length === 2 &&
               chatInfo.members
                 .filter((member) => member._id !== currentUser._id)
                 .map((member) => (
@@ -65,29 +75,30 @@ const ChatInfo = ({ chatId, currentUser, hideFunc }) => {
                     <p className="mt-2 text-white">{member.username}</p>
                   </div>
                 ))}
-            {/* <div className="w-full h-[60%] relative p-2 flex items-center justify-center">
-              <div className="flex flex-col items-center justify-center w-full p-2 h-[100%] relative rounded-xl bg-white/20 shadow-md">
-                <p>Members</p>
-                <div className="w-full h-[90%] overflow-y-auto customScroll flex flex-col gap-2">
-                  {chatInfo &&
-                    chatInfo.members.map((member, index) => (
-                      <div key={index} className="w-full flex items-center">
-                        <img
-                          key={index}
-                          src={member.avatar}
-                          alt="Avatar"
-                          className="w-10 h-10 z-10 bg-black bg-opacity-50 rounded-full border-2 border-white"
-                        />
-                        <p className="bg-blue-400 shadow-md rounded-r-xl -ml-1 px-2">
-                          {member.username}
-                        </p>
-                      </div>
-                    ))}
-                </div>
+            {chatInfo && chatInfo.members.length !== 2 && (
+              <div className="flex flex-col items-center">
+                <img
+                  src={chatInfo.pastMembers?.[0]?.avatar}
+                  alt={chatInfo.pastMembers?.[0]?.username}
+                  className="w-16 h-16 rounded-full object-cover border-2 border-white"
+                />
+                <p className="mt-2 text-white">
+                  {chatInfo.pastMembers?.[0]?.username}
+                </p>
               </div>
-            </div> */}
-            <div className="w-full h-[10%] flex items-center justify-center">
-              <p className="bg-red-500 p-2 rounded-xl">Remove Friend</p>
+            )}
+            <div className="w-full flex gap-2 flex-col items-center justify-center">
+              <button
+                onClick={handleRemoveFriend}
+                className="bg-red-500 p-2 rounded-xl"
+              >
+                Remove Friend
+              </button>
+              <p className="text-center text-xs">
+                <span>📌</span>
+                Removing a friend won’t delete your chat unless they remove you
+                too. If they re-add you, the chat restores.
+              </p>
             </div>
           </div>
           <div className="w-full h-[10%] text-sm flex flex-col items-center justity-center">

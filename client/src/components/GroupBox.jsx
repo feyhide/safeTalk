@@ -93,7 +93,6 @@ const GroupBox = () => {
   const handleSendMessage = () => {
     if (selectedgroup && message.trim()) {
       let memberIds = selectedgroup.members.map((member) => member._id);
-      memberIds.push(currentUser._id);
       socket.emit("sendMessageGroup", {
         sender: currentUser._id,
         members: memberIds,

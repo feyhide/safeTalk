@@ -17,6 +17,7 @@ const SearchMemberToAdd = ({ setAddMember }) => {
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const socket = useSocket();
+  const [requestedUser, setRequestedUser] = useState([]);
 
   const handleSearch = async () => {
     const usernameRegex = /^[a-z][a-z0-9_]*$/;
@@ -80,9 +81,7 @@ const SearchMemberToAdd = ({ setAddMember }) => {
       userId: userToAddId,
       groupId: selectedgroup._id,
     });
-    setSearchContacts((prevContacts) =>
-      prevContacts.filter((c) => c._id !== userToAddId)
-    );
+    setRequestedUser((prev) => [...prev, userToAddId]);
   };
 
   return (
@@ -97,7 +96,9 @@ const SearchMemberToAdd = ({ setAddMember }) => {
           />
           <div className="w-full h-full flex p-2 flex-col font-slim justify-center items-center">
             <div className="w-full h-[20%] flex flex-col items-center justify-center">
-              <h1 className="font-semibold text-xl">Add your connections</h1>
+              <h1 className="font-semibold font-slim text-xl text-center">
+                Add your friends in this group
+              </h1>
               <div className="w-full bg-blue-200 rounded-xl px-2  flex items-center">
                 <input
                   type="text"
@@ -125,18 +126,24 @@ const SearchMemberToAdd = ({ setAddMember }) => {
                       <p>{contact.username}</p>
                     </div>
                     <div className="w-auto">
-                      <button
-                        onClick={() => handleAddMember(contact._id)}
-                        className="p-2 bg-green-500 text-white rounded-xl"
-                      >
-                        Add
-                      </button>
+                      {requestedUser.includes(contact._id) ? (
+                        <p className="p-2 bg-slate-500 text-white rounded-xl">
+                          Requested
+                        </p>
+                      ) : (
+                        <button
+                          onClick={() => handleAddMember(contact._id)}
+                          className="p-2 bg-green-500 text-white rounded-xl"
+                        >
+                          Add
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))
               ) : (
-                <p>
-                  {searchName.length === 0
+                <p className="text-center">
+                  {searchName.length <= 2
                     ? "Search for a user"
                     : "No user matched"}
                 </p>

@@ -94,7 +94,7 @@ const connectedSlice = createSlice({
         } else {
           state.connectedGroups.unshift({
             page: 1,
-            peoples: [groupPayload],
+            groups: [groupPayload],
           });
         }
       } else {
@@ -106,20 +106,34 @@ const connectedSlice = createSlice({
         state.connectedGroups = [];
       }
 
-      const groupToUpdate = action.payload;
-      if (!groupToUpdate || !groupToUpdate._id) {
+      const request = action.payload;
+      if (!request || !request.groupId || !request.updatedGroup) {
         console.error("Invalid payload:", action.payload);
         return;
       }
 
-      const groupIndex = state.connectedGroups.findIndex(
-        (group) => group._id === groupToUpdate._id
-      );
+      let groupFound = false;
 
-      if (groupIndex !== -1) {
-        state.connectedGroups[groupIndex] = groupToUpdate;
-      } else {
-        state.connectedGroups.push(groupToUpdate);
+      state.connectedGroups.forEach((groupPage) => {
+        const groupIndex = groupPage.groups.findIndex(
+          (g) => g._id === request.groupId
+        );
+
+        if (groupIndex !== -1) {
+          groupPage.groups[groupIndex] = request.updatedGroup;
+          groupFound = true;
+        }
+      });
+
+      if (!groupFound) {
+        if (state.connectedGroups.length > 0) {
+          state.connectedGroups[0].groups.unshift(request.updatedGroup);
+        } else {
+          state.connectedGroups.push({
+            page: 1,
+            groups: [request.updatedGroup],
+          });
+        }
       }
     },
     removeConnection: (state, action) => {

@@ -1,16 +1,19 @@
-add member
-groupname regex
-username regex
-
 in messagebox 
  - friends
-    .delete chat
+    .leave chat (add user to old members 
+      allow other user to add the userback)
+    .if chat has no members (all members leave then delete chat)
     .block
-    .message time
  - groups
     .show info about group (info members, change avatar, change groupName, since groupcreated)
     .admin , admin add or remove members
-    .message time
     .leave group
-
+    .admin delete group
+    .if group has no members then delete group
+   
 speed check on msg sending
+
+file and images
+
+groupname regex
+username regex

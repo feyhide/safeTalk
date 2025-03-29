@@ -9,7 +9,6 @@ import { appendMember, appendMessageGroup } from "../redux/groupSlice.js";
 import { HOST } from "../constant/constant.js";
 import {
   appendConnection,
-  appendGroup,
   removeConnection,
   updateConnectedGroup,
 } from "../redux/connectedSlice.js";
@@ -87,13 +86,10 @@ export const SocketProvider = ({ children }) => {
 
       const handleMemberAdded = (request) => {
         console.log(request);
-        if (currentUser._id === request.user._id) {
-          dispatch(appendGroup(request.groupNow));
+        if (selectedgroup._id === request.groupId) {
+          dispatch(appendMember(request.addedUser));
         }
-        if (currentUser._id !== request.userToAddId) {
-          dispatch(appendMember(request.user));
-          dispatch(updateConnectedGroup(request.groupNow));
-        }
+        dispatch(updateConnectedGroup(request));
       };
 
       const connectionRemoved = (request) => {

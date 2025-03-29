@@ -282,7 +282,8 @@ const setUpSocket = (server) => {
         return;
       }
 
-      const user = await User.findById(userId).select("_id username avatar");
+      const user = await User.findById(userId);
+
       if (!user) {
         console.error(error);
         return;
@@ -309,7 +310,7 @@ const setUpSocket = (server) => {
       await group.save();
       await user.save();
 
-      const groupNow = await Group.findById(groupId).populate({
+      const updatedGroup = await Group.findById(groupId).populate({
         path: "members",
         select: "_id username avatar",
       });
@@ -318,9 +319,13 @@ const setUpSocket = (server) => {
         if (userSocketMap.has(memberId.toString())) {
           const socketId = userSocketMap.get(memberId.toString());
           io.to(socketId).emit("newMemberAdded", {
-            groupNow,
-            user,
-            userToAddId: userId,
+            groupId,
+            updatedGroup,
+            addedUser: {
+              _id: user._id,
+              username: user.username,
+              avatar: user.avatar,
+            },
           });
         }
       });

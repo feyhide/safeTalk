@@ -85,12 +85,18 @@ export const SocketProvider = ({ children }) => {
       };
 
       const handleConnectionUpdated = (connection) => {
-        console.log(connection);
-        dispatch(appendConnection(connection));
+        if (connection.status === "New") {
+          dispatch(appendConnection(connection.data));
+        } else {
+          if (currentUser._id === connection.sender) {
+            dispatch(updateSelectedChat(connection.data));
+          } else {
+            dispatch(appendConnection(connection.data));
+          }
+        }
       };
 
       const handleMemberAdded = (request) => {
-        console.log(request);
         if (selectedgroup._id === request.groupId) {
           dispatch(appendMember(request.addedUser));
         }
@@ -98,8 +104,6 @@ export const SocketProvider = ({ children }) => {
       };
 
       const connectionRemoved = (request) => {
-        console.log(request);
-
         switch (request.status) {
           case "chatRemoved":
             if (selectedChat && selectedChat._id === request.chatId) {
@@ -130,8 +134,6 @@ export const SocketProvider = ({ children }) => {
           default:
             break;
         }
-
-        //dispatch(removeConnection(request));
       };
 
       socket.current.on("connectionRemoved", connectionRemoved);

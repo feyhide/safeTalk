@@ -1,8 +1,6 @@
 in messagebox 
  - friends
-    .leave chat (add user to old members 
-      allow other user to add the userback)
-    .if chat has no members (all members leave then delete chat)
+    .add back
     .block
  - groups
     .(change groupName)
@@ -17,3 +15,7 @@ file and images
 
 groupname regex
 username regex
+
+
+// sender will get chat updated
+// reciever will get chat in connected

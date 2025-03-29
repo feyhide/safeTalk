@@ -346,7 +346,7 @@ const setUpSocket = (server) => {
       }
 
       const senderUser = await User.findById(sender).select(
-        "username avatar _id connectedPeoples"
+        "username avatar _id"
       );
 
       if (!senderUser) {
@@ -355,7 +355,7 @@ const setUpSocket = (server) => {
       }
 
       const recipientUser = await User.findById(recipient).select(
-        "username avatar _id connectedPeoples"
+        "username avatar _id"
       );
 
       if (!recipientUser) {
@@ -363,14 +363,58 @@ const setUpSocket = (server) => {
         return;
       }
 
-      let chat;
-
-      const existingChat = await Chat.findOne({
-        members: { $all: [recipient, sender] },
+      const chat = await Chat.findOne({
+        members: { $in: [sender] },
+        pastMembers: { $in: [recipient] },
       });
 
-      if (existingChat) {
-        chat = existingChat;
+      let RresponseData;
+      let SresponseData;
+
+      if (chat) {
+        chat.pastMembers = chat.pastMembers.filter(
+          (id) => id.toString() !== recipient.toString()
+        );
+        if (
+          !chat.members.some((id) => id.toString() === recipient.toString())
+        ) {
+          chat.members.push(recipient);
+        }
+        await chat.save();
+
+        SresponseData = {
+          status: "Existing",
+          sender,
+          recipient,
+          data: {
+            _id: chat._id,
+            members: [
+              {
+                _id: recipientUser._id,
+                username: recipientUser.username,
+                avatar: recipientUser.avatar,
+              },
+            ],
+            pastMembers: chat.pastMembers,
+          },
+        };
+
+        RresponseData = {
+          status: "Existing",
+          sender,
+          recipient,
+          data: {
+            _id: chat._id,
+            members: [
+              {
+                _id: senderUser._id,
+                username: senderUser.username,
+                avatar: senderUser.avatar,
+              },
+            ],
+            pastMembers: chat.pastMembers,
+          },
+        };
       } else {
         const newChat = new Chat({
           members: [recipient, sender],
@@ -378,36 +422,42 @@ const setUpSocket = (server) => {
 
         await newChat.save();
 
-        chat = newChat;
+        SresponseData = {
+          status: "New",
+          data: {
+            _id: newChat._id,
+            members: [
+              {
+                _id: recipientUser._id,
+                username: recipientUser.username,
+                avatar: recipientUser.avatar,
+              },
+            ],
+            pastMembers: newChat.pastMembers,
+          },
+        };
+
+        RresponseData = {
+          status: "New",
+          data: {
+            _id: newChat._id,
+            members: [
+              {
+                _id: senderUser._id,
+                username: senderUser.username,
+                avatar: senderUser.avatar,
+              },
+            ],
+            pastMembers: newChat.pastMembers,
+          },
+        };
       }
-
-      const connectionMessageS = {
-        _id: chat._id,
-        members: [
-          {
-            _id: recipientUser._id,
-            username: recipientUser.username,
-            avatar: recipientUser.avatar,
-          },
-        ],
-      };
-
-      const connectionMessageR = {
-        _id: chat._id,
-        members: [
-          {
-            _id: senderUser._id,
-            username: senderUser.username,
-            avatar: senderUser.avatar,
-          },
-        ],
-      };
 
       if (recipientSocketId) {
-        io.to(recipientSocketId).emit("connectionUpdated", connectionMessageR);
+        io.to(recipientSocketId).emit("connectionUpdated", RresponseData);
       }
       if (senderSocketId) {
-        io.to(senderSocketId).emit("connectionUpdated", connectionMessageS);
+        io.to(senderSocketId).emit("connectionUpdated", SresponseData);
       }
     } catch (error) {
       console.error("Error adding connection:", error);

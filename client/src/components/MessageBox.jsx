@@ -107,6 +107,13 @@ const MessageBox = () => {
     }
   };
 
+  const handleSendConnection = () => {
+    socket.emit("sendConnection", {
+      sender: currentUser._id,
+      recipient: selectedChat.pastMembers?.[0]?._id,
+    });
+  };
+
   useEffect(() => {
     dispatch(refreshChat());
   }, [selectedChat]);
@@ -253,7 +260,10 @@ const MessageBox = () => {
                 </div>
               </div>
             ) : (
-              <button className="bg-green-600 text-white p-2 rounded-xl">
+              <button
+                onClick={handleSendConnection}
+                className="bg-green-600 text-white p-2 rounded-xl"
+              >
                 ReAdd
               </button>
             )}

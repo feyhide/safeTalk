@@ -32,7 +32,12 @@ export const createGroup = async (req, res) => {
 
     const newGroup = new Group({
       groupName,
-      members: [req.userId.toString()],
+      members: [
+        {
+          user: req.userId,
+          role: "admin",
+        },
+      ],
     });
 
     await newGroup.save();
@@ -41,7 +46,7 @@ export const createGroup = async (req, res) => {
     await user.save();
 
     const group = await Group.findById(newGroup._id).populate({
-      path: "members",
+      path: "members.user",
       select: "_id username avatar",
     });
 
@@ -57,17 +62,18 @@ export const getGroupList = async (req, res) => {
     const { page = 1, limit = 5 } = req.query;
     const parsedPage = parseInt(page, 10);
     const parsedLimit = parseInt(limit, 10);
-
-    const groups = await Group.find({ members: req.userId })
+    const groups = await Group.find({ "members.user": req.userId })
       .populate({
-        path: "members",
+        path: "members.user",
         select: "_id username avatar",
       })
       .sort({ updatedAt: -1 })
       .skip((parsedPage - 1) * parsedLimit)
       .limit(parsedLimit);
 
-    const totalGroups = await Group.countDocuments({ members: req.userId });
+    const totalGroups = await Group.countDocuments({
+      "members.user": req.userId,
+    });
     const totalPages = Math.ceil(totalGroups / parsedLimit);
 
     return res.status(200).json({
@@ -88,7 +94,7 @@ export const getGroupInfo = async (req, res) => {
     const { groupId } = req.query;
 
     const group = await Group.findById(groupId)
-      .populate("members", "_id username avatar")
+      .populate("members.user", "_id username avatar")
       .lean();
 
     console.log(group);

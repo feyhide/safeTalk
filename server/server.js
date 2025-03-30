@@ -14,6 +14,7 @@ import helmet from "helmet";
 import xss from "xss-clean";
 import mongoSantize from "express-mongo-sanitize";
 import csurf from "csurf";
+import Group from "./model/Group.js";
 
 dotenv.config();
 

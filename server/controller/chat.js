@@ -166,7 +166,11 @@ export const getGroupMessages = async (req, res) => {
       return sendError(res, "Group not found", null, 404);
     }
 
-    if (!checkGroup.members.includes(req.userId)) {
+    if (
+      !checkGroup.members.some(
+        (member) => member.user.toString() === req.userId.toString()
+      )
+    ) {
       return sendError(res, "You are not a member of this group", null, 403);
     }
 

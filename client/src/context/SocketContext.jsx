@@ -9,7 +9,10 @@ import {
   resetChat,
   updateSelectedChat,
 } from "../redux/chatSlice.js";
-import { appendMember, appendMessageGroup } from "../redux/groupSlice.js";
+import {
+  appendMessageGroup,
+  updateSelectedGroup,
+} from "../redux/groupSlice.js";
 import { HOST } from "../constant/constant.js";
 import {
   appendConnection,
@@ -97,8 +100,9 @@ export const SocketProvider = ({ children }) => {
       };
 
       const handleMemberAdded = (request) => {
-        if (selectedgroup._id === request.groupId) {
-          dispatch(appendMember(request.addedUser));
+        console.log(request);
+        if (selectedgroup && selectedgroup._id === request.groupId) {
+          dispatch(updateSelectedGroup(request.updatedGroup));
         }
         dispatch(updateConnectedGroup(request));
       };

@@ -1,7 +1,7 @@
 in messagebox 
  - friends
-    .add back
     .block
+
  - groups
     .(change groupName)
     .admin , admin add or remove members
@@ -15,7 +15,3 @@ file and images
 
 groupname regex
 username regex
-
-
-// sender will get chat updated
-// reciever will get chat in connected

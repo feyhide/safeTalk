@@ -94,7 +94,7 @@ const GroupBox = () => {
 
   const handleSendMessage = () => {
     if (selectedgroup && message.trim()) {
-      let memberIds = selectedgroup.members.map((member) => member._id);
+      let memberIds = selectedgroup.members.map((member) => member.user._id);
       socket.emit("sendMessageGroup", {
         sender: currentUser._id,
         members: memberIds,
@@ -136,7 +136,7 @@ const GroupBox = () => {
                   .map((member, index) => (
                     <img
                       key={index}
-                      src={member.avatar}
+                      src={member.user.avatar}
                       alt="Avatar"
                       className=" w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
                       style={{ zIndex: selectedgroup.members.length + index }}
@@ -170,7 +170,7 @@ const GroupBox = () => {
             .map((msg, index) => {
               const isFirstItem = index === 0;
               const sender = selectedgroup.members.find(
-                (member) => member._id === msg.sender
+                (member) => member.user._id === msg.sender
               );
               return (
                 <div
@@ -184,7 +184,7 @@ const GroupBox = () => {
                 >
                   {msg.sender !== currentUser._id && sender && (
                     <img
-                      src={sender.avatar}
+                      src={sender.user.avatar}
                       alt="Sender Avatar"
                       className="h-8 rounded-full bg-black bg-opacity-50 border-2"
                     />

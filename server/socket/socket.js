@@ -305,27 +305,22 @@ const setUpSocket = (server) => {
         user.connectedGroups = [];
       }
 
-      group.members.push(user._id);
+      group.members.push({ user: user._id, role: "member" });
       user.connectedGroups.push(group._id);
       await group.save();
       await user.save();
 
       const updatedGroup = await Group.findById(groupId).populate({
-        path: "members",
+        path: "members.user",
         select: "_id username avatar",
       });
 
       group.members.forEach((memberId) => {
-        if (userSocketMap.has(memberId.toString())) {
-          const socketId = userSocketMap.get(memberId.toString());
+        if (userSocketMap.has(memberId.user._id.toString())) {
+          const socketId = userSocketMap.get(memberId.user._id.toString());
           io.to(socketId).emit("newMemberAdded", {
             groupId,
             updatedGroup,
-            addedUser: {
-              _id: user._id,
-              username: user.username,
-              avatar: user.avatar,
-            },
           });
         }
       });

@@ -66,6 +66,15 @@ const groupSlice = createSlice({
         console.warn("Invalid older messages format", messages);
       }
     },
+    updateSelectedGroup: (state, action) => {
+      if (!state.selectedgroup) return;
+
+      const request = action.payload;
+
+      if (state.selectedgroup._id === request._id) {
+        state.selectedgroup = request;
+      }
+    },
     resetGroup: (state) => {
       state.selectedgroup = null;
       state.groupData = [];
@@ -79,6 +88,7 @@ const groupSlice = createSlice({
 export const {
   resetGroup,
   updatePageAndTotal,
+  updateSelectedGroup,
   addGroup,
   appendMember,
   addGroupData,

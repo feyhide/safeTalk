@@ -147,7 +147,7 @@ const Listing = ({ createFunc, changingFunc, type }) => {
                       {list.members.slice(0, 4).map((member, idx) => (
                         <img
                           key={idx}
-                          src={member.avatar}
+                          src={member.user.avatar}
                           alt="Avatar"
                           className="w-8 h-8 bg-black bg-opacity-50 rounded-full border-2 border-white"
                           style={{ zIndex: list.members.length - idx }}
@@ -354,7 +354,7 @@ const ChatList = ({ setLogOut }) => {
                   <h1 className="font-semibold text-center text-xl">
                     Add Friends
                   </h1>
-                  <div className="w-full bg-slate-500/50 rounded-xl px-2 flex items-center">
+                  <div className="w-full bg-white/20 text-white rounded-xl px-2 flex items-center">
                     <input
                       type="text"
                       placeholder="username"
@@ -387,29 +387,34 @@ const ChatList = ({ setLogOut }) => {
           </div>
         )}
         {createGroup && (
-          <div className="z-50 absolute w-[90vw] flex items-center justify-center flex-col lg:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
-            <div className="w-[90%] text-white p-2 h-[50%] rounded-xl overflow-hidden relative bg-blue-400">
+          <div className="z-50 absolute w-[90vw] text-white flex items-center justify-center flex-col lg:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
+            <div className="w-[90%] h-[80%] rounded-xl relative bg-blue-400">
               <img
                 onClick={() => setCreateGroup(false)}
                 className="w-8 h-8 absolute top-5 left-5"
                 src="/icons/crossblack.png"
               />
-              <div className="w-full h-full font-slim flex flex-col gap-2 justify-center items-center">
-                <div className="w-full bg-slate-500/50 rounded-xl px-2 flex flex-col items-center">
-                  <input
-                    type="text"
-                    placeholder="Group Name"
-                    onChange={(e) => setGroupName(e.target.value)}
-                    value={groupName}
-                    className="w-full p-2 bg-transparent rounded-xl outline-none"
-                  />
+              <div className="w-full h-full flex p-2 flex-col font-slim justify-center items-center">
+                <div className="w-full h-[15%] flex flex-col items-center gap-2">
+                  <h1 className="font-semibold text-center text-xl">
+                    Create Group
+                  </h1>
+                  <div className="w-full bg-white/20 text-white rounded-xl px-2 flex items-center">
+                    <input
+                      type="text"
+                      placeholder="Group Name"
+                      onChange={(e) => setGroupName(e.target.value)}
+                      value={groupName}
+                      className="w-full p-2 bg-transparent rounded-xl outline-none"
+                    />
+                  </div>
+                  <button
+                    onClick={handleCreateGroup}
+                    className="bg-green-500 p-2 text-white rounded-xl"
+                  >
+                    Create Group
+                  </button>
                 </div>
-                <button
-                  onClick={handleCreateGroup}
-                  className="bg-green-500 p-2 text-white rounded-xl"
-                >
-                  Create Group
-                </button>
               </div>
             </div>
           </div>

@@ -85,10 +85,10 @@ const SearchMemberToAdd = ({ setAddMember }) => {
   };
 
   return (
-    <div className="absolute z-50 w-full h-full flex items-center justify-center bg-white bg-opacity-50">
+    <div className="z-50 absolute w-[90vw] text-white flex items-center justify-center flex-col lg:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
       <Toaster />
-      <div className="w-1/2 h-1/2 bg-white rounded-xl">
-        <div className="w-ful h-full rounded-xl relative bg-white">
+      <div className="w-[90%] md:w-1/2 h-[80%] rounded-xl relative bg-blue-400">
+        <div className="w-full h-full rounded-xl relative">
           <img
             onClick={() => setAddMember(false)}
             className="w-8 h-8 absolute top-5 left-5"
@@ -111,7 +111,9 @@ const SearchMemberToAdd = ({ setAddMember }) => {
             </div>
             <div className="w-full h-[50%] overflow-y-auto">
               {loading ? (
-                <p>Searching...</p>
+                <div className="w-full h-full flex items-center justify-center text-center">
+                  Searching...
+                </div>
               ) : searchContacts.length > 0 ? (
                 searchContacts?.map((contact, index) => (
                   <div
@@ -142,11 +144,11 @@ const SearchMemberToAdd = ({ setAddMember }) => {
                   </div>
                 ))
               ) : (
-                <p className="text-center">
+                <div className="w-full h-full flex items-center justify-center text-center">
                   {searchName.length <= 2
                     ? "Search for a user"
                     : "No user matched"}
-                </p>
+                </div>
               )}
             </div>
           </div>

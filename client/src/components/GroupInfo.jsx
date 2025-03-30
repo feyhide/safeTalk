@@ -60,7 +60,7 @@ const GroupInfo = ({ groupId, currentUser, hideFunc }) => {
                     .map((member, index) => (
                       <img
                         key={index}
-                        src={member.avatar}
+                        src={member.user.avatar}
                         alt="Avatar"
                         className="w-10 h-10 bg-black bg-opacity-50 rounded-full border-2 border-white"
                         style={{ zIndex: groupInfo.members.length + index }}
@@ -78,13 +78,14 @@ const GroupInfo = ({ groupId, currentUser, hideFunc }) => {
                       <div key={index} className="w-full flex items-center">
                         <img
                           key={index}
-                          src={member.avatar}
+                          src={member.user.avatar}
                           alt="Avatar"
                           className="w-10 h-10 z-10 bg-black bg-opacity-50 rounded-full border-2 border-white"
                         />
-                        <p className="bg-blue-400 shadow-md rounded-r-xl -ml-1 px-2">
-                          {member.username}
-                        </p>
+                        <div className="flex w-full items-center justify-between bg-blue-400 shadow-md rounded-r-xl -ml-1 px-2">
+                          <p>{member.user.username}</p>
+                          <p className="text-xs">{member.role}</p>
+                        </div>
                       </div>
                     ))}
                 </div>

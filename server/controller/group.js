@@ -45,10 +45,15 @@ export const createGroup = async (req, res) => {
     user.connectedGroups.push(newGroup._id);
     await user.save();
 
-    const group = await Group.findById(newGroup._id).populate({
-      path: "members.user",
-      select: "_id username avatar",
-    });
+    const group = await Group.findById(newGroup._id)
+      .populate({
+        path: "members.user",
+        select: "_id username avatar",
+      })
+      .populate({
+        path: "pastMembers",
+        select: "_id username avatar",
+      });
 
     return sendSuccess(res, "Group created successfully.", group, 200);
   } catch (error) {
@@ -65,6 +70,10 @@ export const getGroupList = async (req, res) => {
     const groups = await Group.find({ "members.user": req.userId })
       .populate({
         path: "members.user",
+        select: "_id username avatar",
+      })
+      .populate({
+        path: "pastMembers",
         select: "_id username avatar",
       })
       .sort({ updatedAt: -1 })
@@ -97,7 +106,6 @@ export const getGroupInfo = async (req, res) => {
       .populate("members.user", "_id username avatar")
       .lean();
 
-    console.log(group);
     return sendSuccess(res, "fetched group info successfully", group, 200);
   } catch (error) {
     console.log(error);

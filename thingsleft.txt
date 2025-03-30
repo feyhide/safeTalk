@@ -4,11 +4,11 @@ in messagebox
 
  - groups
     .(change groupName)
-    .admin , admin add or remove members
-    .leave group
-    .admin delete group
-    .if group has no members then delete group
+    .(allow creatin other admin)
    
+ - correct member adding if that member is in past member then removed from past member
+ - deconstruct the request and connection in socket
+
 speed check on msg sending
 
 file and images

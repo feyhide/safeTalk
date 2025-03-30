@@ -20,6 +20,12 @@ const GroupSchema = new mongoose.Schema(
         },
       },
     ],
+    pastMembers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );

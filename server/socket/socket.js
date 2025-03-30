@@ -301,6 +301,17 @@ const setUpSocket = (server) => {
         return;
       }
 
+      let member = group?.members.find(
+        (member) => member.user._id.toString() === requestUser
+      );
+
+      if (member?.role !== "admin") {
+        console.log("only admin can add");
+        return;
+      } else if (member?.role === "admin") {
+        console.log("admin adding");
+      }
+
       if (!Array.isArray(user.connectedGroups)) {
         user.connectedGroups = [];
       }
@@ -310,10 +321,15 @@ const setUpSocket = (server) => {
       await group.save();
       await user.save();
 
-      const updatedGroup = await Group.findById(groupId).populate({
-        path: "members.user",
-        select: "_id username avatar",
-      });
+      const updatedGroup = await Group.findById(groupId)
+        .populate({
+          path: "members.user",
+          select: "_id username avatar",
+        })
+        .populate({
+          path: "pastMembers",
+          select: "_id username avatar",
+        });
 
       group.members.forEach((memberId) => {
         if (userSocketMap.has(memberId.user._id.toString())) {
@@ -552,6 +568,226 @@ const setUpSocket = (server) => {
     }
   };
 
+  const handleRemoveMember = async (request) => {
+    try {
+      if (request.sender === request.userTodel) {
+        console.log("you cant do that ");
+        return;
+      }
+      const senderUser = await User.findById(request.sender);
+
+      if (!senderUser) {
+        console.error("Sender user not found");
+        return;
+      }
+
+      const group = await Group.findById(request.groupId);
+      if (!group) {
+        console.error("Group not found");
+        return;
+      }
+
+      let member = group?.members.find(
+        (member) => member.user._id.toString() === request.sender
+      );
+
+      if (member?.role !== "admin") {
+        console.log("only admin can removed shit");
+        return;
+      }
+
+      const userToDel = await User.findById(request.userTodel);
+      if (!userToDel) {
+        console.error("User to remove not found");
+        return;
+      }
+
+      group.members = group.members.filter(
+        (member) => member.user._id.toString() !== userToDel._id.toString()
+      );
+
+      group.pastMembers.push(userToDel._id);
+
+      await group.save();
+
+      const updatedGroup = await Group.findById(request.groupId)
+        .populate({
+          path: "members.user",
+          select: "_id username avatar",
+        })
+        .populate({
+          path: "pastMembers",
+          select: "_id username avatar",
+        });
+
+      request.members.forEach((memberId) => {
+        if (userSocketMap.has(memberId.toString())) {
+          const socketId = userSocketMap.get(memberId.toString());
+          io.to(socketId).emit("removedMember", {
+            groupId: request.groupId,
+            removedUser: userToDel._id,
+            updatedGroup,
+          });
+        }
+      });
+    } catch (error) {
+      console.error("Error removing member from group:", error.message);
+    }
+  };
+
+  const handleLeaveGroup = async (request) => {
+    try {
+      const senderUser = await User.findById(request.sender);
+
+      if (!senderUser) {
+        console.error("Sender user not found");
+        return;
+      }
+
+      const group = await Group.findById(request.groupId);
+      if (!group) {
+        console.error("Group not found");
+        return;
+      }
+
+      let member = group?.members.find(
+        (member) => member.user._id.toString() === request.sender.toString()
+      );
+
+      let responseType = "Error";
+
+      if (member?.role === "admin" && group?.members.length === 1) {
+        responseType = "GroupDeleted";
+        await GroupMessage.deleteMany({ groupId: group._id });
+        await Group.findByIdAndDelete(group._id);
+      } else if (member?.role === "admin" && group?.members.length > 1) {
+        responseType = "AdminError";
+        console.log("cannot leave group as an admin with members > 1");
+      } else {
+        responseType = "MemberLeaved";
+        group.members = group.members.filter(
+          (member) => member.user._id.toString() !== request.sender.toString()
+        );
+        group.pastMembers.push(request.sender);
+        await group.save();
+      }
+
+      let response = {};
+
+      switch (responseType) {
+        case "AdminError":
+          response.status = responseType;
+          response.message =
+            "Admin cannot leave group with members > 1, assign someone else adminship";
+          break;
+        case "MemberLeaved":
+          const updatedGroup = await Group.findById(request.groupId)
+            .populate({
+              path: "members.user",
+              select: "_id username avatar",
+            })
+            .populate({
+              path: "pastMembers",
+              select: "_id username avatar",
+            });
+          response.status = responseType;
+          response.message = "Member Leaved";
+          response.groupId = group._id;
+          response.updatedGroup = updatedGroup;
+          response.removedMember = request.sender;
+          break;
+        case "GroupDeleted":
+          response.status = responseType;
+          response.message = "Group Deleted";
+          response.groupId = group._id;
+          break;
+        default:
+          response.status = responseType;
+          response.message = "An Error Occured";
+          break;
+      }
+
+      request.members.forEach((memberId) => {
+        if (userSocketMap.has(memberId.toString())) {
+          const socketId = userSocketMap.get(memberId.toString());
+          io.to(socketId).emit("leavedGroup", response);
+        }
+      });
+    } catch (error) {
+      console.error("Error removing member from group:", error.message);
+    }
+  };
+
+  const handleChangeRole = async (request) => {
+    try {
+      if (request.sender === request.userToChangeRole) {
+        console.log("you cant do that ");
+        return;
+      }
+      const senderUser = await User.findById(request.sender);
+
+      if (!senderUser) {
+        console.error("Sender user not found");
+        return;
+      }
+
+      const group = await Group.findById(request.groupId);
+      if (!group) {
+        console.error("Group not found");
+        return;
+      }
+
+      let member = group?.members.find(
+        (member) => member.user._id.toString() === request.sender
+      );
+
+      if (member?.role !== "admin") {
+        console.log("only admin can promote shit");
+        return;
+      }
+
+      const userToChangeRole = await User.findById(request.userToChangeRole);
+      if (!userToChangeRole) {
+        console.error("User to change role not found");
+        return;
+      }
+
+      group.members = group.members.map((member) => {
+        if (member.user._id.toString() === userToChangeRole._id.toString()) {
+          return {
+            ...member,
+            role: member.role === "admin" ? "member" : "admin",
+          };
+        }
+        return member;
+      });
+
+      await group.save();
+
+      const updatedGroup = await Group.findById(request.groupId)
+        .populate({
+          path: "members.user",
+          select: "_id username avatar",
+        })
+        .populate({
+          path: "pastMembers",
+          select: "_id username avatar",
+        });
+
+      request.members.forEach((memberId) => {
+        if (userSocketMap.has(memberId.toString())) {
+          const socketId = userSocketMap.get(memberId.toString());
+          io.to(socketId).emit("changedRole", {
+            groupId: request.groupId,
+            updatedGroup,
+          });
+        }
+      });
+    } catch (error) {
+      console.error("Error changing role of member in group:", error.message);
+    }
+  };
+
   io.on("connection", (socket) => {
     const userId = socket.handshake.query.userId;
     if (userId) {
@@ -562,6 +798,9 @@ const setUpSocket = (server) => {
     }
 
     socket.on("removeFriend", handleRemoveFriend);
+    socket.on("removeMember", handleRemoveMember);
+    socket.on("changeRole", handleChangeRole);
+    socket.on("leaveGroup", handleLeaveGroup);
     socket.on("sendConnection", handleAddConnection);
     socket.on("addMemberToGroup", handleAddMemberToGroup);
     socket.on("sendMessageGroup", sendMessageGroup);

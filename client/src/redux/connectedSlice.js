@@ -172,6 +172,18 @@ const connectedSlice = createSlice({
         }
       }
     },
+    removeFromConnectedGroup: (state, action) => {
+      const request = action.payload;
+      for (const page of state.connectedGroups) {
+        const groupIndex = page.groups.findIndex(
+          (g) => g._id === request.groupId
+        );
+        if (groupIndex !== -1) {
+          page.groups.splice(groupIndex, 1);
+          break;
+        }
+      }
+    },
   },
 });
 
@@ -180,9 +192,10 @@ export const {
   appendConnection,
   updateConnectedPeople,
   updateConnectedGroup,
-  removeFromConnectedPeople,
   appendOlderGroups,
   appendOlderPeoples,
+  removeFromConnectedPeople,
+  removeFromConnectedGroup,
 } = connectedSlice.actions;
 
 export default connectedSlice.reducer;

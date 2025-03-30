@@ -13,10 +13,10 @@ import GroupInfo from "./GroupInfo.jsx";
 
 const GroupBox = () => {
   const socket = useSocket();
-
   const [groupInfo, setGroupInfo] = useState(false);
   const { selectedgroup, groupData } = useSelector((state) => state.group);
   const [addMember, setAddMember] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
   const [message, setMessage] = useState("");
   const dispatch = useDispatch();
@@ -109,6 +109,16 @@ const GroupBox = () => {
     dispatch(resetGroup());
   };
 
+  useEffect(() => {
+    let member = selectedgroup?.members.find(
+      (member) => member.user._id === currentUser._id
+    );
+
+    if (member?.role === "admin") {
+      setIsAdmin(true);
+    }
+  }, [selectedgroup]);
+
   return groupInfo ? (
     <GroupInfo
       hideFunc={setGroupInfo}
@@ -147,11 +157,13 @@ const GroupBox = () => {
               {selectedgroup.groupName}
             </p>
           </div>
-          <img
-            onClick={() => setAddMember(true)}
-            src="/icons/addblack.png"
-            className="w-6 h-6 absolute right-5"
-          />
+          {isAdmin && (
+            <img
+              onClick={() => setAddMember(true)}
+              src="/icons/addblack.png"
+              className="w-6 h-6 absolute right-5"
+            />
+          )}
         </div>
       </div>
       <div className="p-1 w-full h-full">
@@ -169,9 +181,18 @@ const GroupBox = () => {
             .reverse()
             .map((msg, index) => {
               const isFirstItem = index === 0;
-              const sender = selectedgroup.members.find(
+              let pastUser = false;
+              let sender = selectedgroup.members.find(
                 (member) => member.user._id === msg.sender
               );
+
+              if (!sender) {
+                pastUser = true;
+                sender = selectedgroup.pastMembers.find(
+                  (member) => member._id === msg.sender
+                );
+              }
+
               return (
                 <div
                   ref={isFirstItem ? ref : null}
@@ -184,15 +205,21 @@ const GroupBox = () => {
                 >
                   {msg.sender !== currentUser._id && sender && (
                     <img
-                      src={sender.user.avatar}
+                      src={pastUser ? sender.avatar : sender.user.avatar}
                       alt="Sender Avatar"
-                      className="h-8 rounded-full bg-black bg-opacity-50 border-2"
+                      className={`h-8 rounded-full bg-black bg-opacity-50 border-2  ${
+                        pastUser ? "border-white/50" : "border-white"
+                      } `}
                     />
                   )}
-                  <div className="max-w-[50%] lg:max-w-1/2 ">
+                  <div className={`max-w-[50%] lg:max-w-1/2 `}>
                     {msg.sender !== currentUser._id && sender && (
-                      <p className="text-xs lg:text-sm text-white">
-                        {sender.username}
+                      <p
+                        className={`text-xs lg:text-sm ${
+                          pastUser ? "text-white/50" : "text-white"
+                        } `}
+                      >
+                        {pastUser ? sender.username : sender.user.username}
                       </p>
                     )}
                     <div

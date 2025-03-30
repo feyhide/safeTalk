@@ -11,11 +11,13 @@ import {
 } from "../redux/chatSlice.js";
 import {
   appendMessageGroup,
+  resetGroup,
   updateSelectedGroup,
 } from "../redux/groupSlice.js";
 import { HOST } from "../constant/constant.js";
 import {
   appendConnection,
+  removeFromConnectedGroup,
   removeFromConnectedPeople,
   updateConnectedGroup,
   updateConnectedPeople,
@@ -134,20 +136,78 @@ export const SocketProvider = ({ children }) => {
               dispatch(updateConnectedPeople({ updatedChat: request.data }));
             }
             break;
-
           default:
             break;
         }
       };
 
+      const handleRemovedMember = (request) => {
+        console.log(request);
+
+        if (currentUser._id === request.removedUser) {
+          if (selectedgroup && selectedgroup._id === request.groupId) {
+            dispatch(resetGroup());
+          }
+          dispatch(removeFromConnectedGroup(request));
+        } else {
+          if (selectedgroup && selectedgroup._id === request.groupId) {
+            dispatch(updateSelectedGroup(request.updatedGroup));
+          }
+          dispatch(updateConnectedGroup(request));
+        }
+      };
+
+      const handleLeavedGroup = (request) => {
+        console.log(request);
+
+        switch (request.status) {
+          case "GroupDeleted":
+            if (selectedgroup && selectedgroup._id === request.groupId) {
+              dispatch(resetGroup());
+            }
+            dispatch(removeFromConnectedGroup(request));
+            break;
+          case "MemberLeaved":
+            if (currentUser._id === request.removedMember) {
+              if (selectedgroup && selectedgroup._id === request.groupId) {
+                dispatch(resetGroup());
+              }
+              dispatch(removeFromConnectedGroup(request));
+            } else {
+              if (selectedgroup && selectedgroup._id === request.groupId) {
+                dispatch(updateSelectedGroup(request.updatedGroup));
+              }
+              dispatch(updateConnectedGroup(request));
+            }
+            break;
+          default:
+            console.log(request.message);
+            break;
+        }
+      };
+
+      const handleChangedRole = (request) => {
+        console.log("changerole", request);
+        if (selectedgroup && selectedgroup._id === request.groupId) {
+          dispatch(updateSelectedGroup(request.updatedGroup));
+        }
+        dispatch(updateConnectedGroup(request));
+      };
+
+      socket.current.on("changedRole", handleChangedRole);
+      socket.current.on("leavedGroup", handleLeavedGroup);
       socket.current.on("connectionRemoved", connectionRemoved);
+      socket.current.on("removedMember", handleRemovedMember);
       socket.current.on("receivedMessage", handleReceivedMessage);
       socket.current.on("connectionUpdated", handleConnectionUpdated);
       socket.current.on("newMemberAdded", handleMemberAdded);
       socket.current.on("receivedGroupMessage", receivedGroupMessage);
 
       return () => {
+        socket.current.off("changedRole", handleChangedRole);
+        socket.current.off("leavedGroup", handleLeavedGroup);
         socket.current.off("connectionRemoved", connectionRemoved);
+        socket.current.off("removedMember", handleRemovedMember);
         socket.current.off("receivedGroupMessage", receivedGroupMessage);
         socket.current.off("newMemberAdded", handleMemberAdded);
         socket.current.off("receivedMessage", handleReceivedMessage);

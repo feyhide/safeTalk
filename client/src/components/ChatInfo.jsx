@@ -102,8 +102,20 @@ const ChatInfo = ({ chatId, currentUser, hideFunc }) => {
             </div>
           </div>
           <div className="w-full h-[10%] text-sm flex flex-col items-center justity-center">
-            <p>Together Since</p>
-            <p>{formatDate(chatInfo.createdAt)}</p>
+            <p
+              className={`${
+                chatInfo && chatInfo.members.length !== 2 && " line-through"
+              }`}
+            >
+              Together Since
+            </p>
+            <p
+              className={`${
+                chatInfo && chatInfo.members.length !== 2 && " line-through"
+              }`}
+            >
+              {formatDate(chatInfo.createdAt)}
+            </p>
           </div>
         </div>
       )}

@@ -313,7 +313,7 @@ const ChatList = ({ setLogOut }) => {
       <Toaster />
       <div className="w-screen flex flex-col relative lg:w-[30%] items-center justify-center h-screen bg-white">
         {removeConnect && (
-          <div className="z-50 absolute w-[90vw] flex items-center justify-center flex-col lg:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
+          <div className="z-50 absolute w-[100vw] h-[100svh] flex items-center justify-center flex-col lg:w-[90%] lg:h-[95%] lg:rounded-xl bg-white bg-opacity-30">
             <div className="w-[90%] h-[80%] rounded-xl relative bg-white">
               <div className="w-full h-full flex p-2 flex-col font-slim justify-center items-center gap-2">
                 <h1 className="font-heading font-bold text-black text-lg text-center">
@@ -342,7 +342,7 @@ const ChatList = ({ setLogOut }) => {
           </div>
         )}
         {sendConnect && (
-          <div className="z-50 absolute w-[90vw] text-white flex items-center justify-center flex-col lg:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
+          <div className="z-50 absolute w-[100vw] h-[100svh] text-white flex items-center justify-center flex-col lg:w-[90%] lg:h-[95%] lg:rounded-xl bg-white bg-opacity-30">
             <div className="w-[90%] h-[80%] rounded-xl relative bg-blue-400">
               <img
                 onClick={() => setSendConnect(false)}
@@ -387,7 +387,7 @@ const ChatList = ({ setLogOut }) => {
           </div>
         )}
         {createGroup && (
-          <div className="z-50 absolute w-[90vw] text-white flex items-center justify-center flex-col lg:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
+          <div className="z-50 absolute w-[100vw] h-[100svh] text-white flex items-center justify-center flex-col lg:w-[90%] lg:h-[95%] lg:rounded-xl bg-white bg-opacity-30">
             <div className="w-[90%] h-[80%] rounded-xl relative bg-blue-400">
               <img
                 onClick={() => setCreateGroup(false)}
@@ -419,7 +419,7 @@ const ChatList = ({ setLogOut }) => {
             </div>
           </div>
         )}
-        <div className="w-[90vw] items-center justify-center px-1 gap-2 flex flex-col lg:w-[90%] h-[95%] rounded-xl bg-blue-400 bg-opacity-90">
+        <div className="w-[100vw] h-[100svh] items-center justify-center px-1 gap-2 flex flex-col lg:w-[90%] lg:h-[95%] lg:rounded-xl bg-blue-400 bg-opacity-90">
           <div className="w-full h-[10%] p-2 gap-2 flex flex-col items-center justify-center">
             <h1 className="font-heading font-bold text-3xl text-white">
               SafeTalk

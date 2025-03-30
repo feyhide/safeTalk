@@ -85,7 +85,7 @@ const SearchMemberToAdd = ({ setAddMember }) => {
   };
 
   return (
-    <div className="z-50 absolute w-[90vw] text-white flex items-center justify-center flex-col lg:w-[90%] h-[95%] rounded-xl bg-white bg-opacity-30">
+    <div className="z-50 absolute w-[100vw] h-[100svh] text-white flex items-center justify-center flex-col lg:w-[100%] lg:h-[100%] lg:rounded-xl bg-white bg-opacity-30">
       <Toaster />
       <div className="w-[90%] md:w-1/2 h-[80%] rounded-xl relative bg-blue-400">
         <div className="w-full h-full rounded-xl relative">

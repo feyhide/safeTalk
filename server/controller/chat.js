@@ -253,22 +253,6 @@ export const getGroupMessages = async (req, res) => {
   }
 };
 
-export const getChatInfo = async (req, res) => {
-  try {
-    const { chatId } = req.query;
-
-    const chat = await Chat.findById(chatId)
-      .populate("members", "username avatar")
-      .populate("pastMembers", "username avatar")
-      .lean();
-
-    return sendSuccess(res, "fetched chat info successfully", chat, 200);
-  } catch (error) {
-    console.log(error);
-    return sendError(res, "error fetching chat info", null, 500);
-  }
-};
-
 export const getChatList = async (req, res) => {
   try {
     const { page = 1, limit = 5 } = req.query;
@@ -288,19 +272,11 @@ export const getChatList = async (req, res) => {
       .skip((parsedPage - 1) * parsedLimit)
       .limit(parsedLimit);
 
-    const chatList = chats.map((chat) => ({
-      _id: chat._id,
-      members: chat.members.filter(
-        (member) => member._id.toString() !== req.userId
-      ),
-      pastMembers: chat.pastMembers,
-    }));
-
     const totalChats = await Chat.countDocuments({ members: req.userId });
     const totalPages = Math.ceil(totalChats / parsedLimit);
     return res.status(200).json({
       success: true,
-      data: chatList,
+      data: chats,
       totalChats,
       totalPages,
       currentPage: parsedPage,

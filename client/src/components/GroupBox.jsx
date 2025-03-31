@@ -121,8 +121,8 @@ const GroupBox = () => {
 
   return groupInfo ? (
     <GroupInfo
+      selectedGroup={selectedgroup}
       hideFunc={setGroupInfo}
-      groupId={selectedgroup?._id}
       currentUser={currentUser}
     />
   ) : (

@@ -90,6 +90,10 @@ const Listing = ({ createFunc, changingFunc, type }) => {
               const isLastItem =
                 i === connectedPeoples.length - 1 &&
                 index === page.peoples.length - 1;
+
+              let other = list.members.find(
+                (member) => member._id !== currentUser?._id
+              );
               return (
                 <div
                   key={list._id}
@@ -100,14 +104,14 @@ const Listing = ({ createFunc, changingFunc, type }) => {
                     onClick={() => changingFunc(list)}
                     className="w-auto flex h-full items-center"
                   >
-                    {list.members.length === 1 ? (
+                    {list.members.length === 2 ? (
                       <>
                         <img
-                          src={list.members[0]?.avatar}
+                          src={other?.avatar}
                           className="z-10 w-8 h-8 bg-black bg-opacity-50 rounded-full border-2"
                         />
                         <p className="bg-blue-400 rounded-r-xl shadow-md -ml-1 px-2">
-                          {list.members[0]?.username}
+                          {other?.username}
                         </p>
                       </>
                     ) : (

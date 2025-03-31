@@ -97,18 +97,3 @@ export const getGroupList = async (req, res) => {
     return sendError(res, "Error fetching group list", null, 500);
   }
 };
-
-export const getGroupInfo = async (req, res) => {
-  try {
-    const { groupId } = req.query;
-
-    const group = await Group.findById(groupId)
-      .populate("members.user", "_id username avatar")
-      .lean();
-
-    return sendSuccess(res, "fetched group info successfully", group, 200);
-  } catch (error) {
-    console.log(error);
-    return sendError(res, "error fetching group info", null, 500);
-  }
-};

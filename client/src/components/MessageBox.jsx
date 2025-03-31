@@ -19,6 +19,7 @@ const MessageBox = () => {
   const [chatInfo, setChatInfo] = useState(false);
   const { selectedChat, chatData } = useSelector((state) => state.chat);
   const { currentUser } = useSelector((state) => state.user);
+  const [otherMember, setOtherMember] = useState(null);
   const [message, setMessage] = useState("");
   const dispatch = useDispatch();
   const chatContainerRef = useRef(null);
@@ -31,6 +32,16 @@ const MessageBox = () => {
       queryClient.removeQueries(["chat"]);
     }
   }, [selectedChat._id]);
+
+  useEffect(() => {
+    if (!selectedChat || !selectedChat.members) return;
+
+    let other = selectedChat.members.find(
+      (member) => member._id !== currentUser?._id
+    );
+
+    setOtherMember(other);
+  }, [selectedChat, currentUser]);
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
@@ -58,7 +69,7 @@ const MessageBox = () => {
         const nextPage = allPages.length + 1;
         return nextPage <= lastPage.totalPages ? nextPage : undefined;
       },
-      enabled: !!selectedChat._id && selectedChat.members.length > 0,
+      enabled: !!selectedChat._id && selectedChat.members.length > 1,
     });
 
   const { ref, entry } = useIntersection({ root: null, threshold: 1 });
@@ -96,10 +107,10 @@ const MessageBox = () => {
   }, [chatData?.length]);
 
   const handleSendMessage = () => {
-    if (selectedChat && message.trim()) {
+    if (selectedChat && message.trim() && otherMember) {
       socket.emit("sendMessage", {
         sender: currentUser._id,
-        recipient: selectedChat.members?.[0]._id,
+        recipient: otherMember?._id,
         chatId: selectedChat._id,
         message: message.trim(),
       });
@@ -108,10 +119,12 @@ const MessageBox = () => {
   };
 
   const handleSendConnection = () => {
-    socket.emit("sendConnection", {
-      sender: currentUser._id,
-      recipient: selectedChat.pastMembers?.[0]?._id,
-    });
+    if (selectedChat.pastMembers.length > 0) {
+      socket.emit("sendConnection", {
+        sender: currentUser._id,
+        recipient: selectedChat.pastMembers?.[0]?._id,
+      });
+    }
   };
 
   useEffect(() => {
@@ -127,7 +140,7 @@ const MessageBox = () => {
       {chatInfo ? (
         <ChatInfo
           hideFunc={setChatInfo}
-          chatId={selectedChat?._id}
+          selectedChat={selectedChat}
           currentUser={currentUser}
         />
       ) : (
@@ -145,13 +158,12 @@ const MessageBox = () => {
               >
                 <img
                   src={
-                    selectedChat.members?.[0]?.avatar ||
-                    selectedChat.pastMembers?.[0]?.avatar
+                    otherMember?.avatar || selectedChat.pastMembers?.[0]?.avatar
                   }
                   className="w-8 h-8 rounded-full z-10 bg-black bg-opacity-50 border-2"
                 />
                 <p className="bg-blue-400 rounded-r-xl shadow-md -ml-1 px-2">
-                  {selectedChat.members?.[0]?.username ||
+                  {otherMember?.username ||
                     selectedChat.pastMembers?.[0]?.username}
                 </p>
               </div>
@@ -162,7 +174,7 @@ const MessageBox = () => {
               ref={chatContainerRef}
               className="w-full overflow-y-auto overflow-x-hidden customScroll px-2 h-[77svh]"
             >
-              {selectedChat.members.length > 0 ? (
+              {selectedChat.members.length > 1 ? (
                 <>
                   {isFetchingNextPage && (
                     <div className="text-center text-white text-sm mb-2">
@@ -186,7 +198,7 @@ const MessageBox = () => {
                         >
                           {msg.sender !== currentUser._id && (
                             <img
-                              src={selectedChat.members[0].avatar}
+                              src={otherMember?.avatar}
                               className="h-8 rounded-full bg-black bg-opacity-50 border-2"
                             />
                           )}
@@ -231,7 +243,7 @@ const MessageBox = () => {
             </div>
           </div>
           <div className="w-full min-h-[10svh] h-auto flex items-center justify-center absolute bottom-0 p-2">
-            {selectedChat?.members?.length !== 0 ? (
+            {selectedChat?.members?.length !== 1 ? (
               <div className="font-slim bg-white rounded-xl text-white flex justify-between gap-2 items-center w-full h-full">
                 <textarea
                   onChange={(e) => setMessage(e.target.value)}

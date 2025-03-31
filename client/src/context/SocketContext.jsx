@@ -95,6 +95,7 @@ export const SocketProvider = ({ children }) => {
         } else {
           if (currentUser._id === connection.sender) {
             dispatch(updateSelectedChat(connection.data));
+            dispatch(updateConnectedPeople({ updatedChat: connection.data }));
           } else {
             dispatch(appendConnection(connection.data));
           }

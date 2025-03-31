@@ -243,7 +243,7 @@ const MessageBox = () => {
             </div>
           </div>
           <div className="w-full min-h-[10svh] h-auto flex items-center justify-center absolute bottom-0 p-2">
-            {selectedChat?.members?.length !== 1 ? (
+            {selectedChat?.members?.length > 1 ? (
               <div className="font-slim bg-white rounded-xl text-white flex justify-between gap-2 items-center w-full h-full">
                 <textarea
                   onChange={(e) => setMessage(e.target.value)}

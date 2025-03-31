@@ -4,8 +4,6 @@ in messagebox
 
  - groups
     .(change groupName)
- - remove chatandgroupInfo instead use data from selectedChat and selectedGroup
- - correct member adding if that member is in past member then removed from past member
  - deconstruct the request and connection in socket
 
 speed check on msg sending

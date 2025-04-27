@@ -13,6 +13,9 @@ import { useIntersection } from "@mantine/hooks";
 import axios from "axios";
 import ChatInfo from "./ChatInfo.jsx";
 import { formatDayTime } from "../utils/utils.js";
+import Upload from "./Upload.jsx";
+import toast, { Toaster } from "react-hot-toast";
+import MessageComponent from "./MessageComponent.jsx";
 
 const MessageBox = () => {
   const socket = useSocket();
@@ -24,6 +27,7 @@ const MessageBox = () => {
   const dispatch = useDispatch();
   const chatContainerRef = useRef(null);
   const prevScrollHeightRef = useRef(0);
+  const [upload, setUpload] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -118,12 +122,58 @@ const MessageBox = () => {
     }
   };
 
+  const handleSendFileUrlSocket = (payload) => {
+    if (selectedChat && payload.trim() && otherMember) {
+      socket.emit("sendMessage", {
+        sender: currentUser._id,
+        recipient: otherMember?._id,
+        chatId: selectedChat._id,
+        message: payload,
+      });
+    }
+  };
+
   const handleSendConnection = () => {
     if (selectedChat.pastMembers.length > 0) {
       socket.emit("sendConnection", {
         sender: currentUser._id,
         recipient: selectedChat.pastMembers?.[0]?._id,
       });
+    }
+  };
+
+  const handleUpload = async (files) => {
+    setUpload(false);
+    const toastId = toast.loading("Sending Files...");
+    try {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+      console.log(formData);
+      const { data } = await axios.post(
+        DOMAIN + "api/v1/upload/upload-files",
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      toast.dismiss(toastId);
+      if (data.success) {
+        console.log("Added Image successfully!", data.data);
+        if (data.data.length > 0) {
+          data.data.forEach((item) => {
+            handleSendFileUrlSocket(item);
+          });
+        }
+      } else {
+        console.log(data.message);
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      console.error(error);
     }
   };
 
@@ -137,6 +187,7 @@ const MessageBox = () => {
 
   return (
     <>
+      <Toaster />
       {chatInfo ? (
         <ChatInfo
           hideFunc={setChatInfo}
@@ -145,6 +196,13 @@ const MessageBox = () => {
         />
       ) : (
         <div className="w-full h-full flex flex-col relative">
+          {upload && (
+            <Upload
+              fileUpload={handleUpload}
+              upload={upload}
+              setUpload={setUpload}
+            />
+          )}
           <div className="w-full h-auto text-black px-2 pt-2 flex items-center justify-center">
             <div className="font-slim bg-white/20 flex gap-2 p-2 rounded-xl bg-opacity-90 items-center w-[100%] h-[8vh]">
               <img
@@ -209,9 +267,7 @@ const MessageBox = () => {
                                 : "bg-white"
                             }`}
                           >
-                            <p className="w-auto text-sm break-words font-slim whitespace-normal">
-                              {msg.message}
-                            </p>
+                            <MessageComponent msg={msg.message} />
                             <p
                               className={`text-[10px] w-full ${
                                 msg.sender === currentUser._id
@@ -244,12 +300,19 @@ const MessageBox = () => {
           </div>
           <div className="w-full min-h-[10svh] h-auto flex items-center justify-center absolute bottom-0 p-2">
             {selectedChat?.members?.length > 1 ? (
-              <div className="font-slim bg-white rounded-xl text-white flex justify-between gap-2 items-center w-full h-full">
+              <div className="font-slim rounded-xl text-white flex justify-between gap-2 items-center w-full h-full">
+                <div className="w-[10%] bg-white py-2 rounded-xl flex items-center justify-center">
+                  <img
+                    onClick={() => setUpload(!upload)}
+                    src="/icons/addblack.png"
+                    className="w-8 h-8"
+                  />
+                </div>
                 <textarea
                   onChange={(e) => setMessage(e.target.value)}
                   value={message}
                   placeholder="Message"
-                  className="w-[90%] text-black p-2 outline-none bg-transparent resize-none"
+                  className="w-[90%] bg-white rounded-xl text-black p-2 outline-none bg-transparent resize-none"
                   style={{
                     minHeight: "100%",
                     maxHeight: "20svh",
@@ -263,7 +326,7 @@ const MessageBox = () => {
                     )}px`;
                   }}
                 />
-                <div className="w-[10%] flex items-center justify-center">
+                <div className="w-[10%] bg-white py-2 rounded-xl flex items-center justify-center">
                   <img
                     onClick={handleSendMessage}
                     src="/icons/send.png"

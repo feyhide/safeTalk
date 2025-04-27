@@ -1,7 +1,7 @@
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import { redisClient } from "../server.js";
+// import { redisClient } from "../server.js";
 import User from "../model/user.js";
 import dotenv from "dotenv";
 import crypto from "crypto";
@@ -58,16 +58,16 @@ export const signup = async (req, res) => {
     const otpKey = `otp:${email}`;
     const tempUserKey = `temp_user:${email}`;
 
-    const pipeline = redisClient.pipeline();
-    pipeline.del(otpKey);
-    pipeline.del(tempUserKey);
-    pipeline.setex(otpKey, 60, otp);
-    pipeline.setex(
-      tempUserKey,
-      600,
-      JSON.stringify({ username, email, hashedPassword })
-    );
-    await pipeline.exec();
+    // const pipeline = redisClient.pipeline();
+    // pipeline.del(otpKey);
+    // pipeline.del(tempUserKey);
+    // pipeline.setex(otpKey, 60, otp);
+    // pipeline.setex(
+    //   tempUserKey,
+    //   600,
+    //   JSON.stringify({ username, email, hashedPassword })
+    // );
+    // await pipeline.exec();
 
     await transporter.sendMail({
       to: email,
@@ -100,8 +100,8 @@ export const verifyOTP = async (req, res) => {
     const otpKey = `otp:${email}`;
     const tempUserKey = `temp_user:${email}`;
 
-    const storedOtp = await redisClient.get(otpKey);
-    const tempUserData = await redisClient.get(tempUserKey);
+    // const storedOtp = await redisClient.get(otpKey);
+    // const tempUserData = await redisClient.get(tempUserKey);
 
     if (!storedOtp || !tempUserData) {
       return res.status(400).json({ message: "Invalid or expired OTP." });
@@ -117,8 +117,8 @@ export const verifyOTP = async (req, res) => {
       hashedPassword: password,
     } = JSON.parse(tempUserData);
 
-    await redisClient.del(otpKey);
-    await redisClient.del(tempUserKey);
+    // await redisClient.del(otpKey);
+    // await redisClient.del(tempUserKey);
 
     const avatar = `https://robohash.org/${username}`;
 

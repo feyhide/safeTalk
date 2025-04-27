@@ -16,6 +16,49 @@ import Group from "../model/Group.js";
 import GroupMessage from "../model/GroupMessage.js";
 dotenv.config();
 
+const uploadFilesToCloudinary = (fileBuffer, fileType) => {
+  return new Promise((resolve, reject) => {
+    const uploadOptions = {
+      folder: "safeTalk",
+      use_filename: true,
+      unique_filename: true,
+    };
+
+    if (fileType.startsWith("image/")) {
+      uploadOptions.transformation = [
+        {
+          quality: "auto:low",
+          width: 800,
+          crop: "scale",
+        },
+      ];
+    }
+
+    let resourceType = "auto";
+    if (fileType.startsWith("video/")) {
+      resourceType = "video";
+    } else if (
+      !fileType.startsWith("image/") &&
+      !fileType.startsWith("video/")
+    ) {
+      resourceType = "raw";
+    }
+
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { ...uploadOptions, resource_type: resourceType },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary upload error:", error);
+          reject(error);
+        } else {
+          resolve(result.secure_url);
+        }
+      }
+    );
+    uploadStream.end(fileBuffer);
+  });
+};
+
 const setUpSocket = (server) => {
   let prod = true;
 
@@ -39,6 +82,8 @@ const setUpSocket = (server) => {
       }
     }
   };
+
+  const sendFiles = async (messagePayload) => {};
 
   const sendMessage = async (messagePayload) => {
     const senderSocketId = userSocketMap.get(messagePayload.sender);
@@ -782,6 +827,8 @@ const setUpSocket = (server) => {
     socket.on("addMemberToGroup", handleAddMemberToGroup);
     socket.on("sendMessageGroup", sendMessageGroup);
     socket.on("sendMessage", sendMessage);
+    // socket.on("sendFilesGroup", sendFilesGroup);
+    socket.on("sendFiles", sendFiles);
     socket.on("disconnect", () => disconnect(socket));
   });
 };

@@ -84,6 +84,10 @@ const SearchMemberToAdd = ({ setAddMember }) => {
     setRequestedUser((prev) => [...prev, userToAddId]);
   };
 
+  const handleAlreadyAdded = (userId) => {
+    return selectedgroup.members.some((member) => member.user._id === userId);
+  };
+
   return (
     <div className="z-50 absolute w-[100vw] h-[100svh] text-white flex items-center justify-center flex-col lg:w-[100%] lg:h-[100%] lg:rounded-xl bg-white bg-opacity-30">
       <Toaster />
@@ -131,6 +135,10 @@ const SearchMemberToAdd = ({ setAddMember }) => {
                       {requestedUser.includes(contact._id) ? (
                         <p className="p-2 bg-slate-500 text-white rounded-xl">
                           Requested
+                        </p>
+                      ) : handleAlreadyAdded(contact._id) ? (
+                        <p className="p-2 bg-gray-400 text-white rounded-xl">
+                          Already Added
                         </p>
                       ) : (
                         <button

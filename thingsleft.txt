@@ -1,14 +1,17 @@
 in messagebox 
  - friends
-    .block
+    .block // not now
 
  - groups
     .(change groupName)
+ - when removing friend send correct data of chat back
  - deconstruct the request and connection in socket
 
 speed check on msg sending
 
-file and images
+file and images and voicenote 
+
+-reply and forward // not now
 
 groupname regex
 username regex

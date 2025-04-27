@@ -7,24 +7,18 @@ import Redis from "ioredis";
 import authRouter from "./route/auth.js";
 import userRouter from "./route/user.js";
 import chatRouter from "./route/Chat.js";
+import uploadRouter from "./route/upload.js";
 import setUpSocket from "./socket/socket.js";
 import groupRouter from "./route/group.js";
 import rateLimit from "express-rate-limit";
-import helmet from "helmet";
 import xss from "xss-clean";
 import mongoSantize from "express-mongo-sanitize";
-import csurf from "csurf";
-import Group from "./model/Group.js";
 
 dotenv.config();
 
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
-//  app.use(helmet({
-//      contentSecurityPolicy: false,
-//      crossOriginEmbedderPolicy: true,
-//  }));
 
 app.use(xss());
 app.use(mongoSantize());
@@ -35,7 +29,6 @@ const limiter = rateLimit({
   message: "Too many requests, please try again after 2 minutes.",
 });
 
-// app.use(csurf({ cookie: true }));
 const allowedOrigins = [
   "https://safetalk-y30j.onrender.com",
   "http://localhost:5173",
@@ -52,24 +45,25 @@ const PORT = process.env.PORT || 3000;
 
 connectDB();
 
-export const redisClient = new Redis({
-  host: process.env.REDIS_HOST,
-  port: process.env.REDIS_PORT,
-  password: process.env.REDIS_PASSWORD,
-});
+// export const redisClient = new Redis({
+//   host: process.env.REDIS_HOST,
+//   port: process.env.REDIS_PORT,
+//   password: process.env.REDIS_PASSWORD,
+// });
 
-redisClient.on("connect", () => {
-  console.log("Redis Connected");
-});
+// redisClient.on("connect", () => {
+//   console.log("Redis Connected");
+// });
 
-redisClient.on("error", (err) => {
-  console.error(`Redis connection error: ${err}`);
-});
+// redisClient.on("error", (err) => {
+//   console.error(`Redis connection error: ${err}`);
+// });
 
 app.use("/api/v1/auth", limiter, authRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/group", groupRouter);
+app.use("/api/v1/upload", uploadRouter);
 
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -10,6 +10,9 @@ import { useIntersection } from "@mantine/hooks";
 import axios from "axios";
 import { formatDayTime } from "../utils/utils.js";
 import GroupInfo from "./GroupInfo.jsx";
+import toast, { Toaster } from "react-hot-toast";
+import Upload from "./Upload.jsx";
+import MessageComponent from "./MessageComponent.jsx";
 
 const GroupBox = () => {
   const socket = useSocket();
@@ -22,6 +25,7 @@ const GroupBox = () => {
   const dispatch = useDispatch();
   const chatContainerRef = useRef(null);
   const prevScrollHeightRef = useRef(0);
+  const [upload, setUpload] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -105,6 +109,18 @@ const GroupBox = () => {
     }
   };
 
+  const handleSendFileUrlSocketGroup = (payload) => {
+    if (selectedgroup && payload.trim()) {
+      let memberIds = selectedgroup.members.map((member) => member.user._id);
+      socket.emit("sendMessageGroup", {
+        sender: currentUser._id,
+        members: memberIds,
+        groupId: selectedgroup._id,
+        message: payload.trim(),
+      });
+    }
+  };
+
   const handleCloseGroup = () => {
     dispatch(resetGroup());
   };
@@ -116,8 +132,45 @@ const GroupBox = () => {
 
     if (member?.role === "admin") {
       setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
     }
-  }, [selectedgroup]);
+  }, [selectedgroup?._id]);
+
+  const handleUploadGroup = async (files) => {
+    setUpload(false);
+    const toastId = toast.loading("Sending Files...");
+    try {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+      console.log(formData);
+      const { data } = await axios.post(
+        DOMAIN + "api/v1/upload/upload-files",
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      toast.dismiss(toastId);
+      if (data.success) {
+        console.log("Added Image successfully!", data.data);
+        if (data.data.length > 0) {
+          data.data.forEach((item) => {
+            handleSendFileUrlSocketGroup(item);
+          });
+        }
+      } else {
+        console.log(data.message);
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      console.error(error);
+    }
+  };
 
   return groupInfo ? (
     <GroupInfo
@@ -127,6 +180,14 @@ const GroupBox = () => {
     />
   ) : (
     <div className="w-full h-full flex flex-col relative">
+      <Toaster />
+      {upload && (
+        <Upload
+          fileUpload={handleUploadGroup}
+          upload={upload}
+          setUpload={setUpload}
+        />
+      )}
       {addMember && <SearchMemberToAdd setAddMember={setAddMember} />}
       <div className="w-full h-[10svh] text-black px-2 pt-2 flex items-center justify-center">
         <div className="font-slim relative bg-white/20 flex gap-2 p-2 rounded-xl bg-opacity-90 items-center w-[100%] h-[100%]">
@@ -229,9 +290,7 @@ const GroupBox = () => {
                           : "bg-white"
                       }`}
                     >
-                      <p className="w-auto text-sm lg:text-lg break-words whitespace-normal">
-                        {msg.message}
-                      </p>
+                      <MessageComponent msg={msg.message} />
                       <p
                         className={`text-[10px] w-full ${
                           msg.sender === currentUser._id
@@ -256,15 +315,22 @@ const GroupBox = () => {
         </div>
       </div>
       <div className="w-full min-h-[10svh] h-auto flex items-center absolute bottom-0 p-2">
-        <div className="font-slim bg-white rounded-xl bg-opacity-90 text-white flex justify-between gap-2 items-center w-full h-full">
+        <div className="font-slim rounded-xl bg-opacity-90 text-white flex justify-between gap-2 items-center w-full h-full">
+          <div className="w-[10%] bg-white py-2 rounded-xl flex items-center justify-center">
+            <img
+              onClick={() => setUpload(!upload)}
+              src="/icons/addblack.png"
+              className="w-8 h-8"
+            />
+          </div>
           <textarea
             onChange={(e) => setMessage(e.target.value)}
             value={message}
             placeholder="Message"
-            className="w-[90%] text-black p-2 outline-none bg-transparent resize-none"
+            className="text-black p-2 outline-none w-[90%] bg-white rounded-xl resize-none"
             style={{ minHeight: "100%", maxHeight: "20svh", overflowY: "auto" }}
           />
-          <div className="w-[10%] flex items-center justify-center">
+          <div className="w-[10%]  bg-white py-2 rounded-xl flex items-center justify-center">
             <img
               onClick={handleSendMessage}
               src="/icons/send.png"

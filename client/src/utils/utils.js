@@ -22,9 +22,17 @@ export const formatDate = (isoString) => {
 export const formatDayTime = (isoString) => {
   const date = new Date(isoString);
   return date.toLocaleString("en-US", {
-    weekday: "short", // "Mon", "Tue", etc.
+    weekday: "short",
     hour: "2-digit",
     minute: "2-digit",
-    hour12: true, // 12-hour format with AM/PM
+    hour12: true,
   });
+};
+
+export const formatTime = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+    .toString()
+    .padStart(2, "0")}`;
 };

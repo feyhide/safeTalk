@@ -28,6 +28,7 @@ const MediaPreview = ({ setSelectedMedia, msg }) => {
 
   const handleDownload = async () => {
     try {
+      const toastId = toast.loading("Downloading...");
       const response = await axios.post(
         DOMAIN + `api/v1/upload/download-file`,
         { url: msg },
@@ -49,8 +50,6 @@ const MediaPreview = ({ setSelectedMedia, msg }) => {
         }
       }
 
-      console.log(response.headers);
-
       const blob = new Blob([response.data], {
         type: response.headers["content-type"] || "application/octet-stream",
       });
@@ -64,6 +63,7 @@ const MediaPreview = ({ setSelectedMedia, msg }) => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(blobUrl);
+      toast.dismiss(toastId);
     } catch (err) {
       console.error("Error downloading file:", err);
       toast.error("Download failed.");

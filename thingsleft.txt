@@ -1,14 +1,12 @@
 
-voicenote
-
 forget password thing
 refresh token too
 
-caching
+caching // not now
 
-infinite scroll problem
+infinite scroll problem //not now
 
-last message in list box
+last message in list box // not now
 
 groupname regex
 username regex

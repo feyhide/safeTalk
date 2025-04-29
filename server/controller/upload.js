@@ -1,23 +1,72 @@
 import dotenv from "dotenv";
 import cloudinary from "../utils/cloudinary.js";
 import axios from "axios";
+import ffmpeg from "fluent-ffmpeg";
+import path from "path";
+import os from "os";
+import fs from "fs";
 
 dotenv.config();
 
 import { sendError, sendSuccess } from "../utils/response.js";
 
+const getAudioDuration = (audioFile) => {
+  return new Promise((resolve, reject) => {
+    const tempFilePath = path.join(
+      os.tmpdir(),
+      `${Date.now()}_${audioFile.originalname}`
+    );
+    const outputFilePath = path.join(os.tmpdir(), `${Date.now()}_output.wav`);
+
+    fs.writeFileSync(tempFilePath, audioFile.buffer);
+
+    ffmpeg(tempFilePath)
+      .output(outputFilePath)
+      .on("end", () => {
+        ffmpeg.ffprobe(outputFilePath, (err, data) => {
+          if (err) {
+            console.log("Error with ffprobe:", err);
+            reject(err);
+          } else {
+            const duration = data.format.duration;
+            resolve(duration);
+          }
+          fs.unlinkSync(tempFilePath);
+          fs.unlinkSync(outputFilePath);
+        });
+      })
+      .run();
+  });
+};
+
 const uploadFilesToCloudinary = (fileBuffer, fileType, originalFileName) => {
   return new Promise((resolve, reject) => {
-    const uploadOptions = {
-      folder: "safeTalk",
-      use_filename: true,
-      unique_filename: false,
-      public_id: originalFileName,
-    };
+    const filename = originalFileName.split(".")[0];
+    const ext = originalFileName.split(".")[1];
+    let uploadOptions;
+
+    if (ext === "wav" || ext === "mp3") {
+      uploadOptions = {
+        folder: "safeTalk",
+        use_filename: true,
+        unique_filename: false,
+        public_id: filename,
+        format: "wav",
+      };
+    } else {
+      uploadOptions = {
+        folder: "safeTalk",
+        use_filename: true,
+        unique_filename: false,
+        public_id: filename,
+      };
+    }
 
     let resourceType = "auto";
 
-    if (fileType.startsWith("image")) {
+    if (fileType.startsWith("audio")) {
+      resourceType = "video";
+    } else if (fileType.startsWith("image")) {
       uploadOptions.transformation = [{ quality: "auto:low" }];
       resourceType = "image";
     } else if (fileType.startsWith("video/")) {
@@ -42,6 +91,38 @@ const uploadFilesToCloudinary = (fileBuffer, fileType, originalFileName) => {
 
     uploadStream.end(fileBuffer);
   });
+};
+
+export const uploadAudio = async (req, res) => {
+  try {
+    if (!req.file) {
+      return sendError(res, "No audio file uploaded", null, 400);
+    }
+
+    const audioFile = req.file;
+
+    if (audioFile.mimetype.startsWith("audio")) {
+      const duration = await getAudioDuration(audioFile);
+      if (duration > 300) {
+        return sendError(
+          res,
+          "Audio file duration exceeds 5 minutes",
+          null,
+          400
+        );
+      }
+      const audioUrl = await uploadFilesToCloudinary(
+        audioFile.buffer,
+        audioFile.mimetype,
+        audioFile.originalname
+      );
+
+      return sendSuccess(res, "Audio uploaded successfully", audioUrl, 201);
+    }
+  } catch (error) {
+    console.error("Error uploading audio:", error);
+    return sendError(res, "Error uploading audio", null, 500);
+  }
 };
 
 export const uploadFiles = async (req, res) => {

@@ -11,7 +11,8 @@ const MessageComponent = ({ msg }) => {
       url.endsWith(".jpeg") ||
       url.endsWith(".png") ||
       url.endsWith(".gif") ||
-      url.endsWith(".bmp")
+      url.endsWith(".bmp") ||
+      url.endsWith(".webp")
     ) {
       return "image";
     } else if (
@@ -20,20 +21,18 @@ const MessageComponent = ({ msg }) => {
       url.endsWith(".avi")
     ) {
       return "video";
+    } else if (url.endsWith(".wav") || url.endsWith("mp3")) {
+      return "audio";
     } else {
       return "other";
     }
-  };
-
-  const createDownloadableUrl = (url) => {
-    return url.replace("/upload/", "/upload/fl_attachment/");
   };
 
   const mediaType = isCloudinaryUrl ? getMediaType(msg) : null;
 
   return isCloudinaryUrl ? (
     mediaType === "image" ? (
-      <div className="w-[300px] h-[300px] flex items-center justify-center">
+      <div className="max-w-full max-h-full  w-[300px] h-[300px] flex items-center justify-center">
         <div>
           <img
             src={msg}
@@ -43,17 +42,19 @@ const MessageComponent = ({ msg }) => {
         </div>
       </div>
     ) : mediaType === "video" ? (
-      <div className="w-[300px] h-[300px] flex relative items-center justify-center">
+      <div className="max-w-full max-h-full w-[300px] h-[300px] flex relative items-center justify-center">
         <img src="/icons/play.png" className="absolute" />
-        <video className="max-w-full max-h-full rounded-lg">
+        <video className="max-w-full max-h-full object-contain rounded-lg">
           <source src={msg} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       </div>
+    ) : mediaType === "audio" ? (
+      <audio controls src={msg} />
     ) : (
-      <div className="w-auto bg-slate-400 rounded-xl p-2 flex gap-2 items-center justify-center h-[50px]">
+      <div className="w-auto h-auto bg-slate-400 rounded-xl p-2 flex gap-2 items-center justify-center">
         <img className="w-5 h-5" src="/icons/file.png" />
-        <p className="text-sm break-words font-slim whitespace-normal w-full truncate">
+        <p className=" text-sm break-words font-slim whitespace-normal w-full truncate">
           {msg.substring(msg.lastIndexOf("/") + 1)}
         </p>
       </div>

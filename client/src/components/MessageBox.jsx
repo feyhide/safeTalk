@@ -12,7 +12,7 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useIntersection } from "@mantine/hooks";
 import axios from "axios";
 import ChatInfo from "./ChatInfo.jsx";
-import { formatDayTime } from "../utils/utils.js";
+import { formatDayTime, formatTime } from "../utils/utils.js";
 import Upload from "./Upload.jsx";
 import toast, { Toaster } from "react-hot-toast";
 import MessageComponent from "./MessageComponent.jsx";
@@ -30,6 +30,12 @@ const MessageBox = () => {
   const prevScrollHeightRef = useRef(0);
   const [upload, setUpload] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState(null);
+  const [audioMode, setAudioMode] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const streamRef = useRef(null);
+  const [audioTime, setAudioTime] = useState(0);
 
   const queryClient = useQueryClient();
 
@@ -197,6 +203,109 @@ const MessageBox = () => {
     }
   };
 
+  const handleUploadAudio = async (audioBlob) => {
+    try {
+      const formData = new FormData();
+      const audioFile = new File([audioBlob], "audio.wav", {
+        type: "audio/wav",
+      });
+      formData.append("audio", audioFile);
+
+      const { data } = await axios.post(
+        DOMAIN + "api/v1/upload/upload-audio",
+        formData,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      if (data.success) {
+        console.log("audio successfully!", data.data);
+        handleSendFileUrlSocket(data.data);
+        console.log(data.data);
+      } else {
+        console.log(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+      streamRef.current = stream;
+
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+      setAudioTime(0);
+
+      const updateAudioTime = setInterval(() => {
+        if (mediaRecorderRef.current.state === "recording") {
+          setAudioTime((prevTime) => prevTime + 1);
+        }
+      }, 1000);
+
+      mediaRecorderRef.current.onstop = () => {
+        clearInterval(updateAudioTime);
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/wav",
+        });
+        handleUploadAudio(audioBlob);
+
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      };
+    } catch (err) {
+      console.error("Error accessing microphone", err);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleAudioMode = () => {
+    if (audioMode) {
+      setAudioMode(false);
+      if (isRecording) {
+        stopRecording();
+      }
+    } else {
+      setAudioMode(true);
+      setAudioTime(0);
+      if (!isRecording) {
+        startRecording();
+      }
+    }
+  };
+
+  useEffect(() => {
+    let timeout;
+    if (isRecording) {
+      timeout = setTimeout(() => {
+        handleAudioMode();
+      }, 300000);
+    }
+
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [isRecording]);
+
   return (
     <>
       <Toaster />
@@ -327,29 +436,44 @@ const MessageBox = () => {
                     className="w-8 h-8"
                   />
                 </div>
-                <textarea
-                  onChange={(e) => setMessage(e.target.value)}
-                  value={message}
-                  placeholder="Message"
-                  className="w-[90%] bg-white rounded-xl text-black p-2 outline-none bg-transparent resize-none"
-                  style={{
-                    minHeight: "100%",
-                    maxHeight: "20svh",
-                    overflowY: "auto",
-                  }}
-                  onInput={(e) => {
-                    e.target.style.height = "auto";
-                    e.target.style.height = `${Math.min(
-                      e.target.scrollHeight,
-                      e.target.offsetHeight + 150
-                    )}px`;
-                  }}
-                />
-                <div className="w-[10%] bg-white py-2 rounded-xl flex items-center justify-center">
+                {audioMode ? (
+                  <p className="w-[75%] flex items-center justify-center">
+                    {formatTime(audioTime)}
+                  </p>
+                ) : (
+                  <textarea
+                    onChange={(e) => setMessage(e.target.value)}
+                    value={message}
+                    placeholder="Message"
+                    className="w-[75%] bg-white rounded-xl text-black p-2 outline-none bg-transparent resize-none"
+                    style={{
+                      minHeight: "100%",
+                      maxHeight: "20svh",
+                      overflowY: "auto",
+                    }}
+                    onInput={(e) => {
+                      e.target.style.height = "auto";
+                      e.target.style.height = `${Math.min(
+                        e.target.scrollHeight,
+                        e.target.offsetHeight + 150
+                      )}px`;
+                    }}
+                  />
+                )}
+                <div className="w-[15%] rounded-xl flex gap-2 items-center justify-center">
+                  <img
+                    onClick={handleAudioMode}
+                    src="/icons/mic.png"
+                    className={`w-1/2 h-full rounded-full ${
+                      audioMode ? "bg-red-500" : "bg-white"
+                    } p-2`}
+                  />
                   <img
                     onClick={handleSendMessage}
                     src="/icons/send.png"
-                    className="w-8 h-8"
+                    className={`w-1/2 h-full rounded-full ${
+                      audioMode ? "bg-white/50" : "bg-white"
+                    } p-2`}
                   />
                 </div>
               </div>

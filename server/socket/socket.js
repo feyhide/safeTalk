@@ -83,8 +83,6 @@ const setUpSocket = (server) => {
     }
   };
 
-  const sendFiles = async (messagePayload) => {};
-
   const sendMessage = async (messagePayload) => {
     const senderSocketId = userSocketMap.get(messagePayload.sender);
     const recipientSocketId = userSocketMap.get(messagePayload.recipient);
@@ -101,7 +99,6 @@ const setUpSocket = (server) => {
         return;
       }
 
-      // Fetch sender and recipient from DB to get their keys
       const senderUser = await User.findById(messagePayload.sender).select(
         "keys activeKeyId"
       );
@@ -827,8 +824,6 @@ const setUpSocket = (server) => {
     socket.on("addMemberToGroup", handleAddMemberToGroup);
     socket.on("sendMessageGroup", sendMessageGroup);
     socket.on("sendMessage", sendMessage);
-    // socket.on("sendFilesGroup", sendFilesGroup);
-    socket.on("sendFiles", sendFiles);
     socket.on("disconnect", () => disconnect(socket));
   });
 };

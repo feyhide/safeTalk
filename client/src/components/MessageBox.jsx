@@ -16,6 +16,7 @@ import { formatDayTime } from "../utils/utils.js";
 import Upload from "./Upload.jsx";
 import toast, { Toaster } from "react-hot-toast";
 import MessageComponent from "./MessageComponent.jsx";
+import MediaPreview from "./MediaPreview.jsx";
 
 const MessageBox = () => {
   const socket = useSocket();
@@ -28,6 +29,7 @@ const MessageBox = () => {
   const chatContainerRef = useRef(null);
   const prevScrollHeightRef = useRef(0);
   const [upload, setUpload] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -185,6 +187,16 @@ const MessageBox = () => {
     dispatch(resetChat());
   };
 
+  const handlePreview = (msg) => {
+    const cloudinaryUrlPattern =
+      /https:\/\/res\.cloudinary\.com\/[a-zA-Z0-9]+\/.*/;
+
+    const isCloudinaryUrl = cloudinaryUrlPattern.test(msg);
+    if (isCloudinaryUrl) {
+      setSelectedMedia(msg);
+    }
+  };
+
   return (
     <>
       <Toaster />
@@ -201,6 +213,12 @@ const MessageBox = () => {
               fileUpload={handleUpload}
               upload={upload}
               setUpload={setUpload}
+            />
+          )}
+          {selectedMedia && (
+            <MediaPreview
+              setSelectedMedia={setSelectedMedia}
+              msg={selectedMedia}
             />
           )}
           <div className="w-full h-auto text-black px-2 pt-2 flex items-center justify-center">
@@ -261,6 +279,7 @@ const MessageBox = () => {
                             />
                           )}
                           <div
+                            onClick={() => handlePreview(msg.message)}
                             className={`max-w-[50%] lg:max-w-1/2 p-2 rounded-lg ${
                               msg.sender === currentUser._id
                                 ? "bg-white text-black bg-opacity-50"

@@ -1,17 +1,26 @@
-in messagebox 
- - friends
-    .block // not now
 
- - groups
-    .(change groupName)
- - when removing friend send correct data of chat back
- - deconstruct the request and connection in socket
+voicenote
 
-speed check on msg sending
+forget password thing
+refresh token too
 
-file and images and voicenote 
+caching
 
--reply and forward // not now
+infinite scroll problem
+
+last message in list box
 
 groupname regex
 username regex
+
+- groups
+   .(change groupName)
+- when removing friend send correct data of chat back
+- deconstruct the request and connection in socket
+
+speed check on msg sending
+
+in messagebox 
+ - friends
+    .block // not now
+-reply and forward // not now

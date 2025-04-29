@@ -1,11 +1,10 @@
 import dotenv from "dotenv";
 import cloudinary from "../utils/cloudinary.js";
+import axios from "axios";
+
 dotenv.config();
-import {
-  sendError,
-  sendSuccess,
-  sendValidationError,
-} from "../utils/response.js";
+
+import { sendError, sendSuccess } from "../utils/response.js";
 
 const uploadFilesToCloudinary = (fileBuffer, fileType, originalFileName) => {
   return new Promise((resolve, reject) => {
@@ -19,9 +18,7 @@ const uploadFilesToCloudinary = (fileBuffer, fileType, originalFileName) => {
     let resourceType = "auto";
 
     if (fileType.startsWith("image")) {
-      uploadOptions.transformation = [
-        { quality: "auto:low", width: 800, crop: "scale" },
-      ];
+      uploadOptions.transformation = [{ quality: "auto:low" }];
       resourceType = "image";
     } else if (fileType.startsWith("video/")) {
       resourceType = "video";
@@ -49,7 +46,6 @@ const uploadFilesToCloudinary = (fileBuffer, fileType, originalFileName) => {
 
 export const uploadFiles = async (req, res) => {
   try {
-    console.log(req.files);
     if (!req.files || req.files.length === 0) {
       return sendError(res, "No files uploaded", null, 400);
     }
@@ -64,5 +60,45 @@ export const uploadFiles = async (req, res) => {
   } catch (error) {
     console.error("Error uploading files:", error);
     return sendError(res, "Error uploading files", null, 500);
+  }
+};
+
+export const downloadFiles = async (req, res) => {
+  try {
+    const { url } = req.body;
+
+    const cloudinaryUrlPattern =
+      /https:\/\/res\.cloudinary\.com\/[a-zA-Z0-9]+\/.*/;
+
+    const isCloudinaryUrl = cloudinaryUrlPattern.test(url);
+
+    if (!isCloudinaryUrl) {
+      return sendError(res, "Invalid Url", null, 400);
+    }
+    const response = await axios.get(url, {
+      responseType: "stream",
+    });
+
+    let filename = decodeURIComponent(url.split("/").pop());
+
+    const ext = filename.slice(filename.lastIndexOf("."));
+    if (filename.indexOf(ext) !== filename.lastIndexOf(ext)) {
+      filename = filename.slice(0, filename.lastIndexOf(ext));
+    }
+
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader(
+      "Content-Type",
+      response.headers["content-type"] || "application/octet-stream"
+    );
+
+    response.data.pipe(res);
+
+    response.data.on("end", () => {
+      res.end();
+    });
+  } catch (error) {
+    console.error("Error fetching file from Cloudinary:", error);
+    return sendError(res, "Error downloading file", null, 500);
   }
 };

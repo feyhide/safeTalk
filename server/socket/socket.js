@@ -88,6 +88,11 @@ const setUpSocket = (server) => {
     const recipientSocketId = userSocketMap.get(messagePayload.recipient);
 
     try {
+      if (!messagePayload.message || !messagePayload.message.trim()) {
+        console.error("Message is missing");
+        return;
+      }
+
       if (!messagePayload.sender || !messagePayload.recipient) {
         console.error("Sender or recipient ID is missing");
         return;
@@ -682,7 +687,7 @@ const setUpSocket = (server) => {
       } else if (member?.role === "admin" && group?.members.length > 1) {
         responseType = "AdminError";
         console.log("cannot leave group as an admin with members > 1");
-      } else {
+      } else if (member) {
         responseType = "MemberLeaved";
         group.members = group.members.filter(
           (member) => member.user._id.toString() !== request.sender.toString()

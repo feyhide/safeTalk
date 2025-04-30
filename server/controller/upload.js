@@ -41,9 +41,11 @@ const getAudioDuration = (audioFile) => {
 
 const uploadFilesToCloudinary = (fileBuffer, fileType, originalFileName) => {
   return new Promise((resolve, reject) => {
-    const filename = originalFileName.split(".")[0];
+    const filename = originalFileName;
     const ext = originalFileName.split(".")[1];
     let uploadOptions;
+
+    console.log(filename, ext);
 
     if (ext === "wav" || ext === "mp3") {
       uploadOptions = {
@@ -76,6 +78,8 @@ const uploadFilesToCloudinary = (fileBuffer, fileType, originalFileName) => {
     } else {
       resourceType = "raw";
     }
+
+    console.log(resourceType);
 
     const uploadStream = cloudinary.uploader.upload_stream(
       { ...uploadOptions, resource_type: resourceType },
@@ -131,6 +135,14 @@ export const uploadFiles = async (req, res) => {
       return sendError(res, "No files uploaded", null, 400);
     }
 
+    const MAX_TOTAL_SIZE = 50 * 1024 * 1024;
+
+    const totalSize = req.files.reduce((acc, file) => acc + file.size, 0);
+
+    if (totalSize > MAX_TOTAL_SIZE) {
+      return sendError(res, "Total file size exceeds 50 MB limit.", null, 400);
+    }
+
     const uploadedUrls = await Promise.all(
       req.files.map((file) =>
         uploadFilesToCloudinary(file.buffer, file.mimetype, file.originalname)
@@ -166,6 +178,7 @@ export const downloadFiles = async (req, res) => {
     if (filename.indexOf(ext) !== filename.lastIndexOf(ext)) {
       filename = filename.slice(0, filename.lastIndexOf(ext));
     }
+    console.log(filename);
 
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.setHeader(

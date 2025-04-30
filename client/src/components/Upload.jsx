@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import { useState, useRef } from "react";
+import toast from "react-hot-toast";
 
 const Upload = ({ fileUpload, upload, setUpload }) => {
   const [files, setFiles] = useState([]);
@@ -13,7 +14,7 @@ const Upload = ({ fileUpload, upload, setUpload }) => {
     const totalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0);
 
     if (totalSize > 50 * 1024 * 1024) {
-      alert("Total file size must be less than 50 MB!");
+      toast.error("File size should be less than 50 MB");
       return;
     }
 

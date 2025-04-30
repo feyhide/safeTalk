@@ -79,6 +79,23 @@ const insertIntoGroupSchema = Joi.object({
     .pattern(/^[a-zA-Z0-9_]*$/),
 });
 
+const emailSchema = Joi.string().email().required();
+const resetPasswordSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.empty": "Token is required.",
+  }),
+  newPassword: Joi.string()
+    .pattern(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d\W_]{6,20}$/)
+    .required()
+    .messages({
+      "string.pattern.base":
+        "Password must be 6-20 characters long, include at least one numeric digit, one lowercase letter, and one uppercase letter.",
+      "string.empty": "Password is required.",
+    }),
+});
+
+const validateResetPassword = validator(resetPasswordSchema);
+const validateEmail = validator(emailSchema);
 const validateAddInGroup = validator(insertIntoGroupSchema);
 const validateSignin = validator(signInSchema);
 const validateSignup = validator(signUpSchema);
@@ -90,6 +107,8 @@ export {
   validateSignup,
   validateOtp,
   validateSignin,
+  validateResetPassword,
+  validateEmail,
   validateMongodbId,
   validateAddInGroup,
   validateGroupName,

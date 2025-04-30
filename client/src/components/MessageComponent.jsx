@@ -32,7 +32,7 @@ const MessageComponent = ({ msg }) => {
 
   return isCloudinaryUrl ? (
     mediaType === "image" ? (
-      <div className="max-w-full max-h-full  w-[300px] h-[300px] flex items-center justify-center">
+      <div className="max-w-full max-h-full  w-[200px] h-[200px] p-2 flex items-center justify-center">
         <div>
           <img
             src={msg}
@@ -42,7 +42,7 @@ const MessageComponent = ({ msg }) => {
         </div>
       </div>
     ) : mediaType === "video" ? (
-      <div className="max-w-full max-h-full w-[300px] h-[300px] flex relative items-center justify-center">
+      <div className="max-w-full max-h-full w-[200px] h-[200px] p-2 flex relative items-center justify-center">
         <img src="/icons/play.png" className="absolute" />
         <video className="max-w-full max-h-full object-contain rounded-lg">
           <source src={msg} type="video/mp4" />

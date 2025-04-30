@@ -463,6 +463,13 @@ const GroupBox = () => {
                 maxHeight: "20svh",
                 overflowY: "auto",
               }}
+              onInput={(e) => {
+                e.target.style.height = "auto";
+                e.target.style.height = `${Math.min(
+                  e.target.scrollHeight,
+                  e.target.offsetHeight + 150
+                )}px`;
+              }}
             />
           )}
           <div className="w-[15%] rounded-xl flex gap-2 items-center justify-center">
